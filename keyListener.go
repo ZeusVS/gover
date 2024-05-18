@@ -3,13 +3,17 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"math/rand/v2"
 	"os"
 )
 
 const (
     exit = 'q'
     test = 'f'
+
+    up =      'k'
+    down =    'j'
+    dirup =   'h'
+    dirdown = 'l'
 )
 func (ts terminalSession) startListening() {
     r := bufio.NewReader(os.Stdin)
@@ -24,10 +28,17 @@ func (ts terminalSession) startListening() {
         switch {
         case ru == exit:
                 ts.done <- true
-        case ru == test:
-            for i := 0; i < 50; i++ {
-                ts.drawQueue[i] = fmt.Sprintf("%d", rand.IntN(10000000000))
-            }
-    }
+
+        case ru == up:
+            ts.moveSelectionUp()
+        case ru == down:
+            ts.moveSelectionDown()
+        case ru == dirup:
+            ts.moveUpDir()
+        case ru == dirdown:
+            ts.moveDownDir()
+
+        //case ru == test:
+        }
     }
 }

@@ -1,7 +1,7 @@
 package main
 
 const (
-	CSI = "\x1b["
+	CSI = "\033["
 
 	ShowCursorSeq    = "?25h"
 	HideCursorSeq    = "?25l"
@@ -10,4 +10,25 @@ const (
 	ClearScreenSeq   = "2J"
 	EraseLineSeq     = "2K"
 	MoseCursorToSeq  = "%d;%dH"
+
+    StyleReset  = CSI + "0m"
+    // Regular foreground colors
+    StyleFgBlack  = CSI + "30m"
+    StyleFgRed    = CSI + "31m"
+    StyleFgGreen  = CSI + "32m"
+    StyleFgYellow = CSI + "33m"
+    StyleFgBlue   = CSI + "34m"
+    StyleFgPurple = CSI + "35m"
+    StyleFgCyan   = CSI + "36m"
+    StyleFgWhite  = CSI + "37m"
+
+    // Regular background colors
+    StyleBgBlack  = CSI + "40m"
+    StyleBgRed    = CSI + "41m"
+    StyleBgGreen  = CSI + "42m"
+    StyleBgYellow = CSI + "43m"
+    StyleBgBlue   = CSI + "44m"
+    StyleBgPurple = CSI + "45m"
+    StyleBgCyan   = CSI + "46m"
+    StyleBgWhite  = CSI + "47m"
 )
