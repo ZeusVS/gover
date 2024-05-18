@@ -1,14 +1,13 @@
 # Gover
-### Gover: a terminal file manager in go
-Please note this is a project to learn programming,
-the current state is very, extremely alpha.
+## Terminal file manager in go
+The current state of the program is very alpha.
 
-#### Etymology:
+### Etymology:
 Word blend of
     - go: The programming language this file manager is written in
     - rover: The file manager this one is loosely based upon
 
-#### How to start:
+### How to start:
 Build it yourself: (make sure you have go 1.22.3 installed)
 ```bash
 go build
@@ -18,7 +17,7 @@ Then run the executable to launch gover:
 ./gover
 ```
 
-#### Controls:
+### Controls:
 - 'q':  Quit the program
 
 - 'h':  Go to parent directory
