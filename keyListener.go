@@ -24,7 +24,6 @@ func (ts terminalSession) startListening() {
             fmt.Fprintf(os.Stderr, "Error: reading key from Stdin: %s\r\n", err)
         }
 
-
         switch {
         case ru == exit:
                 ts.done <- true

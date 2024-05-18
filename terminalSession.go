@@ -66,7 +66,7 @@ func StartTerminalSession() (terminalSession, error) {
 
         drawQueue: make(map[int]string),
         cwd:       cwd,
-        selectionPos: 1,
+        selectionPos: 0,
 	}
 
 	// Hide the cursor

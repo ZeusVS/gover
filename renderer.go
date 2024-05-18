@@ -23,7 +23,8 @@ func (ts *terminalSession) redraw() {
     defer ts.mu.Unlock()
     
     for pos, line := range ts.drawQueue {
-        ts.moveCursorTo(1, pos)
+        // The line with index 0 is drawn on position 1
+        ts.moveCursorTo(1, pos + 1)
         ts.eraseLine()
         ts.drawLine(line)
 

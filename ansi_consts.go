@@ -31,4 +31,9 @@ const (
     StyleBgPurple = CSI + "45m"
     StyleBgCyan   = CSI + "46m"
     StyleBgWhite  = CSI + "47m"
+
+    // Icons
+    ExecutableIcon = "\uf489 "
+    DirectoryIcon  = "\uf115 "
+    FileIcon       = "\uf016 "
 )

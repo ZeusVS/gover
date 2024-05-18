@@ -17,18 +17,33 @@ func (ts *terminalSession) addFilesToQueue() {
             break
         }
         name := file.Name()
+
+        // Check if file is a directory
         if file.IsDir() {
-            name = StyleFgBlue + name + "/" + StyleReset
+            name = DirectoryIcon + " " + name + "/"
+            if i == ts.selectionPos {
+                name = StyleBgBlue + StyleFgBlack + name + StyleReset
+            } else {
+                name = StyleFgBlue + name + StyleReset
+            }
+
         // Check if file is executable
         } else if file.Type().Perm() & 0111 != 0 {
-            name = StyleFgGreen + name + "*" + StyleReset
+            name = ExecutableIcon + " " + name + "*"
+            if i == ts.selectionPos {
+                name = StyleBgGreen + StyleFgBlack + name + StyleReset
+            } else {
+                name = StyleFgGreen + name + StyleReset
+            }
+
+        // Regular files
+        } else {
+            name = FileIcon + " " + name
+            if i == ts.selectionPos {
+                name = StyleBgWhite + StyleFgBlack + name + StyleReset
+            }
         }
 
-        // drawQueue is 1 based and i is 0 based
-        if (i + 1) == ts.selectionPos {
-            name = StyleBgCyan + name + StyleReset
-        }
-
-        ts.drawQueue[i + 1] = name
+        ts.drawQueue[i] = name
     }
 }
