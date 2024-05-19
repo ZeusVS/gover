@@ -1,49 +1,117 @@
 package main
 
 import (
+	"fmt"
 	"os"
+	"path/filepath"
+	"strings"
 )
 
-func (ts *terminalSession) getFiles() (error) {
-    var err error
-    ts.cwdFiles, err = os.ReadDir(ts.cwd)
-    return err
+const (
+	BottomRows = 2
+)
+
+func (ts *terminalSession) getFiles() error {
+	var err error
+	ts.cwdFiles, err = os.ReadDir(ts.cwd)
+	return err
 }
 
 func (ts *terminalSession) addFilesToQueue() {
-    for i, file := range ts.cwdFiles {
-        // TODO: make this based on a view min and view max so that we can 'scroll'
-        if i >= ts.height {
-            break
-        }
-        name := file.Name()
+	ts.mu.Lock()
+	defer ts.mu.Unlock()
 
-        // Check if file is a directory
-        if file.IsDir() {
-            name = DirectoryIcon + " " + name + "/"
-            if i == ts.selectionPos {
-                name = StyleBgBlue + StyleFgBlack + name + StyleReset
-            } else {
-                name = StyleFgBlue + name + StyleReset
-            }
+	for i, dirEntry := range ts.cwdFiles {
+		// TODO: make this based on a view min and view max so that we can 'scroll'
+		if i > ts.height-1-BottomRows {
+			break
+		}
 
-        // Check if file is executable
-        } else if file.Type().Perm() & 0111 != 0 {
-            name = ExecutableIcon + " " + name + "*"
-            if i == ts.selectionPos {
-                name = StyleBgGreen + StyleFgBlack + name + StyleReset
-            } else {
-                name = StyleFgGreen + name + StyleReset
-            }
+		file, err := dirEntry.Info()
+		if err != nil {
+			continue
+		}
 
-        // Regular files
-        } else {
-            name = FileIcon + " " + name
-            if i == ts.selectionPos {
-                name = StyleBgWhite + StyleFgBlack + name + StyleReset
-            }
-        }
+		var line string
+		var link string
 
-        ts.drawQueue[i] = name
-    }
+		// TODO: When there is a symlink I should check if the link points to
+		// a directory or a file
+		if file.Mode()&os.ModeSymlink != 0 {
+			// Error handling???
+			link, err = filepath.EvalSymlinks(filepath.Join(ts.cwd, file.Name()))
+			line = ts.getLinkLine(i, file, link)
+
+		} else if file.IsDir() {
+			line = ts.getDirLine(i, file)
+
+		} else if file.Mode()&0111 != 0 {
+			line = ts.getExeLine(i, file)
+
+		} else {
+			line = ts.getFileLine(i, file)
+		}
+
+		ts.drawQueue[i] = line
+	}
+}
+
+func (ts *terminalSession) getDirLine(i int, file os.FileInfo) string {
+	line := DirectoryIcon + " " + file.Name()
+	line = ts.addPadding(line)
+
+	if i == ts.selectionPos {
+		line = StyleBgBlue + StyleFgBlack + line + StyleReset
+	} else {
+		line = StyleFgBlue + line + StyleReset
+	}
+	return line
+}
+
+func (ts *terminalSession) getExeLine(i int, file os.FileInfo) string {
+	line := ExecutableIcon + " " + file.Name() + "*"
+	line = ts.addPadding(line)
+	// Add filesize here
+
+	if i == ts.selectionPos {
+		line = StyleBgRed + StyleFgBlack + line + StyleReset
+	} else {
+		line = StyleFgRed + line + StyleReset
+	}
+	return line
+}
+
+func (ts *terminalSession) getFileLine(i int, file os.FileInfo) string {
+	line := FileIcon + " " + file.Name()
+	line = ts.addPadding(line)
+	// Add filesize here
+
+	if i == ts.selectionPos {
+		line = StyleBgWhite + StyleFgBlack + line + StyleReset
+	}
+	return line
+}
+
+func (ts *terminalSession) getLinkLine(i int, file os.FileInfo, link string) string {
+	// TODO: Change icon based on link isdir
+	line := LinkDirIcon + " " + file.Name() + " => " + link
+	line = ts.addPadding(line)
+
+	if i == ts.selectionPos {
+		line = StyleBgCyan + StyleFgBlack + line + StyleReset
+	} else {
+		line = StyleFgCyan + line + StyleReset
+	}
+	return line
+}
+
+func (ts *terminalSession) addPadding(line string) string {
+	// Add spaces upto half the width (for selection background coloring
+	addedSpaces := ts.width/2 - len(line)
+	if addedSpaces > 0 {
+		line = fmt.Sprintf("%s%s", line, strings.Repeat(" ", addedSpaces))
+	}
+	// Make sure we dont go over half the width
+	line = line[:ts.width/2]
+	return line
 }

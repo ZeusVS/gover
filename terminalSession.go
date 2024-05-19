@@ -25,11 +25,11 @@ type terminalSession struct {
 	fdIn          int
 
 	drawQueue    map[int]string
-    cwd          string
-    cwdFiles     []os.DirEntry
-    selectionPos int
-    width        int
-    height       int
+	cwd          string
+	cwdFiles     []os.DirEntry
+	selectionPos int
+	width        int
+	height       int
 }
 
 // Initialise the terminal screen
@@ -37,8 +37,8 @@ func StartTerminalSession() (terminalSession, error) {
 	// Get the terminal input file descriptor
 	fdIn := int(os.Stdin.Fd())
 
-    // Create a new mutex
-    mu := &sync.Mutex{}
+	// Create a new mutex
+	mu := &sync.Mutex{}
 
 	// Put the terminal in raw mode
 	originalState, err := term.MakeRaw(fdIn)
@@ -49,11 +49,11 @@ func StartTerminalSession() (terminalSession, error) {
 	ticker := time.NewTicker(time.Millisecond * 1000 / framerate)
 	done := make(chan bool)
 
-    // Get the current working directory
-    cwd, err := os.Getwd()
-    if err != nil {
+	// Get the current working directory
+	cwd, err := os.Getwd()
+	if err != nil {
 		return terminalSession{}, err
-    }
+	}
 
 	ts := terminalSession{
 		mu:     mu,
@@ -64,9 +64,9 @@ func StartTerminalSession() (terminalSession, error) {
 		originalState: originalState,
 		fdIn:          fdIn,
 
-        drawQueue: make(map[int]string),
-        cwd:       cwd,
-        selectionPos: 0,
+		drawQueue:    make(map[int]string),
+		cwd:          cwd,
+		selectionPos: 0,
 	}
 
 	// Hide the cursor
@@ -74,18 +74,18 @@ func StartTerminalSession() (terminalSession, error) {
 	// Enter the alt screen
 	fmt.Fprint(ts.out, CSI+AltScreenSeq)
 
-    // Get the initial size of the terminal
-    err = ts.GetCurrentSize()
-    if err != nil {
+	// Get the initial size of the terminal
+	err = ts.GetCurrentSize()
+	if err != nil {
 		return terminalSession{}, err
-    }
+	}
 
-    // Get the files in the current working directory
-    err = ts.getFiles()
-    if err != nil {
+	// Get the files in the current working directory
+	err = ts.getFiles()
+	if err != nil {
 		return terminalSession{}, err
-    }
-    ts.addFilesToQueue()
+	}
+	ts.addFilesToQueue()
 
 	return ts, nil
 }

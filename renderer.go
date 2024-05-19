@@ -19,17 +19,17 @@ func (ts *terminalSession) startRendering() {
 
 func (ts *terminalSession) redraw() {
 	// draw everything waiting in the queue to the screen
-    ts.mu.Lock()
-    defer ts.mu.Unlock()
-    
-    for pos, line := range ts.drawQueue {
-        // The line with index 0 is drawn on position 1
-        ts.moveCursorTo(1, pos + 1)
-        ts.eraseLine()
-        ts.drawLine(line)
+	ts.mu.Lock()
+	defer ts.mu.Unlock()
 
-        delete(ts.drawQueue, pos)
-    }
+	for pos, line := range ts.drawQueue {
+		// The line with index 0 is drawn on position 1
+		ts.moveCursorTo(1, pos+1)
+		ts.eraseLine()
+		ts.drawLine(line)
+
+		delete(ts.drawQueue, pos)
+	}
 }
 
 func (ts *terminalSession) drawLine(line string) {
@@ -50,6 +50,6 @@ func (ts *terminalSession) moveCursorTo(x, y int) {
 }
 
 func (ts *terminalSession) GetCurrentSize() (err error) {
-    ts.width, ts.height, err = term.GetSize(ts.fdIn)
+	ts.width, ts.height, err = term.GetSize(ts.fdIn)
 	return err
 }

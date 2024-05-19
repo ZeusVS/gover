@@ -12,7 +12,7 @@ func main() {
 		return
 	}
 	defer ts.StopTerminalSession()
-    
-    go ts.startListening()
+
+	go ts.startListening()
 	ts.startRendering()
 }
