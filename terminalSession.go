@@ -80,7 +80,7 @@ func StartTerminalSession() (terminalSession, error) {
 		return terminalSession{}, err
 	}
 
-	// Get the files in the current working directory
+	// Get the initial files in the current working directory
 	err = ts.getFiles()
 	if err != nil {
 		return terminalSession{}, err

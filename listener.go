@@ -19,8 +19,8 @@ const (
 )
 
 func (ts *terminalSession) startListening() {
-    go ts.startKeyListener()
-    go ts.startResizeListener()
+	go ts.startKeyListener()
+	go ts.startResizeListener()
 }
 
 // TODO: Add multi char inputs
@@ -35,8 +35,8 @@ func (ts *terminalSession) startKeyListener() {
 
 		switch {
 		case ru == exit:
-            close(ts.done)
-            return
+			close(ts.done)
+			return
 
 		case ru == up:
 			ts.moveSelectionUp()
@@ -48,31 +48,31 @@ func (ts *terminalSession) startKeyListener() {
 			ts.moveDownDir()
 
 		case ru == test:
-            // Nothing to test atm
+			// Nothing to test atm
 		}
 	}
 }
 
 func (ts *terminalSession) startResizeListener() {
-    sigc := make(chan os.Signal, 1)
-    signal.Notify(sigc, syscall.SIGWINCH)
+	sigc := make(chan os.Signal, 1)
+	signal.Notify(sigc, syscall.SIGWINCH)
 
-    for {
-        select {
-        case <- ts.done:
-            return
-        case <- sigc:
-            err := ts.GetCurrentSize()
-            if err != nil {
-                continue
-            }
-            err = ts.getFiles()
-            if err != nil {
-                // Better error handling needed probably
-                continue
-            }
-            ts.addFilesToQueue()
-        }
-    }
-    
+	for {
+		select {
+		case <-ts.done:
+			return
+		case <-sigc:
+			err := ts.GetCurrentSize()
+			if err != nil {
+				continue
+			}
+			err = ts.getFiles()
+			if err != nil {
+				// Better error handling needed probably
+				continue
+			}
+			ts.addFilesToQueue()
+		}
+	}
+
 }

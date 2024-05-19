@@ -106,12 +106,12 @@ func (ts *terminalSession) getLinkLine(i int, file os.FileInfo, link string) str
 }
 
 func (ts *terminalSession) addPadding(line string) string {
-	// Add spaces upto half the width (for selection background coloring
-	addedSpaces := ts.width/2 - len(line)
+	// We use runes here because of the ansi codes used
+	// Make the selection box half the console's width wide
+	addedSpaces := ts.width/2 - len([]rune(line))
 	if addedSpaces > 0 {
 		line = fmt.Sprintf("%s%s", line, strings.Repeat(" ", addedSpaces))
 	}
-	// Make sure we dont go over half the width
-	line = line[:ts.width/2]
+	line = string([]rune(line)[:ts.width/2])
 	return line
 }

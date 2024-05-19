@@ -1,6 +1,7 @@
 package main
 
 import (
+	"os"
 	"path/filepath"
 )
 
@@ -51,14 +52,23 @@ func (ts *terminalSession) moveDownDir() {
 		return
 	}
 
-	// TODO: prevent going down if the directory is empty
-
 	// Get the full path
 	fileName := ts.cwdFiles[ts.selectionPos].Name()
-	ts.cwd = filepath.Join(ts.cwd, fileName)
+	newDir := filepath.Join(ts.cwd, fileName)
+	newFiles, err := os.ReadDir(newDir)
+	if err != nil {
+		// Better error handling?
+		return
+	}
 
+	// If dir is empty, don't move directory down
+	if len(newFiles) == 0 {
+		return
+	}
+
+	ts.cwd = newDir
+	ts.cwdFiles = newFiles
 	ts.selectionPos = 0
-	ts.getFiles()
 	ts.clearScreen()
 	ts.addFilesToQueue()
 }
