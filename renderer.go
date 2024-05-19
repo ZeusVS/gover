@@ -50,6 +50,10 @@ func (ts *terminalSession) moveCursorTo(x, y int) {
 }
 
 func (ts *terminalSession) GetCurrentSize() (err error) {
-	ts.width, ts.height, err = term.GetSize(ts.fdIn)
-	return err
+    width, height, err := term.GetSize(ts.fdIn)
+    if err != nil {
+        return err
+    }
+    ts.width, ts.height = width, height
+	return nil
 }

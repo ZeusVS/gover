@@ -19,7 +19,7 @@ type terminalSession struct {
 	mu     *sync.Mutex
 	out    io.Writer
 	ticker *time.Ticker
-	done   chan bool
+	done   chan struct{}
 
 	originalState *term.State
 	fdIn          int
@@ -47,7 +47,7 @@ func StartTerminalSession() (terminalSession, error) {
 	}
 
 	ticker := time.NewTicker(time.Millisecond * 1000 / framerate)
-	done := make(chan bool)
+	done := make(chan struct{})
 
 	// Get the current working directory
 	cwd, err := os.Getwd()
