@@ -86,6 +86,7 @@ func StartTerminalSession() (terminalSession, error) {
 		return terminalSession{}, err
 	}
 	ts.addFilesToQueue()
+    ts.addBottomBarToQueue()
 
 	return ts, nil
 }

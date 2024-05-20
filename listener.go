@@ -72,6 +72,7 @@ func (ts *terminalSession) startResizeListener() {
 				continue
 			}
 			ts.addFilesToQueue()
+            ts.addBottomBarToQueue()
 		}
 	}
 

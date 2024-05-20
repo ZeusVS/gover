@@ -14,6 +14,7 @@ func (ts *terminalSession) moveSelectionUp() {
 	// TODO: make the program only redraw the 2 changed lines instead of entire screen
 	ts.getFiles()
 	ts.addFilesToQueue()
+    ts.addBottomBarToQueue()
 }
 
 func (ts *terminalSession) moveSelectionDown() {
@@ -25,6 +26,7 @@ func (ts *terminalSession) moveSelectionDown() {
 	// TODO: make the program only redraw the 2 changed lines instead of entire screen
 	ts.getFiles()
 	ts.addFilesToQueue()
+    ts.addBottomBarToQueue()
 }
 
 func (ts *terminalSession) moveUpDir() {
@@ -43,6 +45,7 @@ func (ts *terminalSession) moveUpDir() {
 	// this will cause a weird merging of these two draws, should look into solving
 	ts.clearScreen()
 	ts.addFilesToQueue()
+    ts.addBottomBarToQueue()
 }
 
 func (ts *terminalSession) moveDownDir() {
@@ -71,4 +74,5 @@ func (ts *terminalSession) moveDownDir() {
 	ts.selectionPos = 0
 	ts.clearScreen()
 	ts.addFilesToQueue()
+    ts.addBottomBarToQueue()
 }

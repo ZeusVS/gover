@@ -12,6 +12,9 @@ const (
 )
 
 func (ts *terminalSession) getFiles() error {
+	ts.mu.Lock()
+	defer ts.mu.Unlock()
+
 	var err error
 	ts.cwdFiles, err = os.ReadDir(ts.cwd)
 	return err
@@ -108,10 +111,10 @@ func (ts *terminalSession) getLinkLine(i int, file os.FileInfo, link string) str
 func (ts *terminalSession) addPadding(line string) string {
 	// We use runes here because of the ansi codes used
 	// Make the selection box half the console's width wide
-	addedSpaces := ts.width/2 - len([]rune(line))
+	addedSpaces := ts.width / 2 - len([]rune(line))
 	if addedSpaces > 0 {
 		line = fmt.Sprintf("%s%s", line, strings.Repeat(" ", addedSpaces))
 	}
-	line = string([]rune(line)[:ts.width/2])
+	line = string([]rune(line)[:ts.width / 2])
 	return line
 }
