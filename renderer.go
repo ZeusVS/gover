@@ -12,16 +12,16 @@ func (ts *terminalSession) startRendering() {
 		case <-ts.done:
 			return
 		case <-ts.ticker.C:
-			ts.redraw()
+			ts.render()
 		}
 	}
 }
 
-func (ts *terminalSession) redraw() {
-	// draw everything waiting in the queue to the screen
+func (ts *terminalSession) render() {
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
+	// draw everything waiting in the queue to the screen
 	for pos, line := range ts.drawQueue {
 		// The line with index 0 is drawn on position 1
 		ts.moveCursorTo(1, pos+1)
@@ -30,17 +30,29 @@ func (ts *terminalSession) redraw() {
 
 		delete(ts.drawQueue, pos)
 	}
+	// This gets called every frame, hugely unnececary
+	// Has to change
+	ts.drawScrollbars()
+}
+
+func (ts *terminalSession) emptyDrawQueue() {
+	ts.mu.Lock()
+	defer ts.mu.Unlock()
+
+	for i := range ts.drawQueue {
+		delete(ts.drawQueue, i)
+	}
 }
 
 func (ts *terminalSession) drawLine(line string) {
 	fmt.Fprint(ts.out, line)
 }
 
-// Unused for now
 func (ts *terminalSession) clearScreen() {
 	fmt.Fprint(ts.out, CSI+ClearScreenSeq)
 }
 
+// Unused
 func (ts *terminalSession) eraseLine() {
 	fmt.Fprint(ts.out, CSI+EraseLineSeq)
 }

@@ -22,7 +22,7 @@ func (ts *terminalSession) addBottomBarToQueue() {
 
 	// Get the path of the selected item
 	// Start with a space
-	line := " " + ts.cwd + "/" + ts.cwdFiles[ts.selectionPos].Name()
+	line := ts.cwd + "/" + ts.cwdFiles[ts.selectionPos].Name()
 	homeDir, err := os.UserHomeDir()
 
 	var cut bool

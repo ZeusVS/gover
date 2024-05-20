@@ -71,6 +71,7 @@ func (ts *terminalSession) startResizeListener() {
 				// Better error handling needed probably
 				continue
 			}
+			ts.clearScreen()
 			ts.addFilesToQueue()
 			ts.addBottomBarToQueue()
 		}

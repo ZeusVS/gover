@@ -12,6 +12,7 @@ func (ts *terminalSession) moveSelectionUp() {
 	}
 
 	// TODO: make the program only redraw the 2 changed lines instead of entire screen
+	ts.emptyDrawQueue()
 	ts.getFiles()
 	ts.addFilesToQueue()
 	ts.addBottomBarToQueue()
@@ -24,6 +25,7 @@ func (ts *terminalSession) moveSelectionDown() {
 	}
 
 	// TODO: make the program only redraw the 2 changed lines instead of entire screen
+	ts.emptyDrawQueue()
 	ts.getFiles()
 	ts.addFilesToQueue()
 	ts.addBottomBarToQueue()
@@ -40,9 +42,7 @@ func (ts *terminalSession) moveUpDir() {
 		}
 	}
 
-	// If we mode up and down the dir faster than the refresh rate, we will clear
-	// the screen and add files to the queue before the previous files were drawn
-	// this will cause a weird merging of these two draws, should look into solving
+	ts.emptyDrawQueue()
 	ts.clearScreen()
 	ts.addFilesToQueue()
 	ts.addBottomBarToQueue()
@@ -72,6 +72,8 @@ func (ts *terminalSession) moveDownDir() {
 	ts.cwd = newDir
 	ts.cwdFiles = newFiles
 	ts.selectionPos = 0
+
+	ts.emptyDrawQueue()
 	ts.clearScreen()
 	ts.addFilesToQueue()
 	ts.addBottomBarToQueue()

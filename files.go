@@ -62,6 +62,7 @@ func (ts *terminalSession) addFilesToQueue() {
 func (ts *terminalSession) getDirLine(i int, file os.FileInfo) string {
 	line := DirectoryIcon + " " + file.Name()
 	line = ts.addPadding(line)
+	// Add subdir amount here
 
 	if i == ts.selectionPos {
 		line = StyleBgBlue + StyleFgBlack + line + StyleReset
@@ -111,7 +112,8 @@ func (ts *terminalSession) getLinkLine(i int, file os.FileInfo, link string) str
 func (ts *terminalSession) addPadding(line string) string {
 	// We use runes here because of the ansi codes used
 	// Make the selection box half the console's width wide
-	addedSpaces := ts.width/2 - len([]rune(line))
+	// Minus one for the scrollbar
+	addedSpaces := ts.width/2 - len([]rune(line)) - 1
 	if addedSpaces > 0 {
 		line = fmt.Sprintf("%s%s", line, strings.Repeat(" ", addedSpaces))
 	}
