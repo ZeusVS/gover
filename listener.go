@@ -62,18 +62,7 @@ func (ts *terminalSession) startResizeListener() {
 		case <-ts.done:
 			return
 		case <-sigc:
-			err := ts.GetCurrentSize()
-			if err != nil {
-				continue
-			}
-			err = ts.getFiles()
-			if err != nil {
-				// Better error handling needed probably
-				continue
-			}
-			ts.clearScreen()
-			ts.addFilesToQueue()
-			ts.addBottomBarToQueue()
+			ts.resize()
 		}
 	}
 

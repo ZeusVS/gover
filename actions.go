@@ -11,11 +11,7 @@ func (ts *terminalSession) moveSelectionUp() {
 		ts.selectionPos = 0
 	}
 
-	// TODO: make the program only redraw the 2 changed lines instead of entire screen
-	ts.emptyDrawQueue()
-	ts.getFiles()
-	ts.addFilesToQueue()
-	ts.addBottomBarToQueue()
+	ts.refreshQueue()
 }
 
 func (ts *terminalSession) moveSelectionDown() {
@@ -24,11 +20,7 @@ func (ts *terminalSession) moveSelectionDown() {
 		ts.selectionPos = len(ts.cwdFiles) - 1
 	}
 
-	// TODO: make the program only redraw the 2 changed lines instead of entire screen
-	ts.emptyDrawQueue()
-	ts.getFiles()
-	ts.addFilesToQueue()
-	ts.addBottomBarToQueue()
+	ts.refreshQueue()
 }
 
 func (ts *terminalSession) moveUpDir() {
@@ -42,10 +34,7 @@ func (ts *terminalSession) moveUpDir() {
 		}
 	}
 
-	ts.emptyDrawQueue()
-	ts.clearScreen()
-	ts.addFilesToQueue()
-	ts.addBottomBarToQueue()
+	ts.refreshQueue()
 }
 
 func (ts *terminalSession) moveDownDir() {
@@ -73,8 +62,5 @@ func (ts *terminalSession) moveDownDir() {
 	ts.cwdFiles = newFiles
 	ts.selectionPos = 0
 
-	ts.emptyDrawQueue()
-	ts.clearScreen()
-	ts.addFilesToQueue()
-	ts.addBottomBarToQueue()
+	ts.refreshQueue()
 }

@@ -2,8 +2,6 @@ package main
 
 import (
 	"fmt"
-
-	"golang.org/x/term"
 )
 
 func (ts *terminalSession) startRendering() {
@@ -17,55 +15,53 @@ func (ts *terminalSession) startRendering() {
 	}
 }
 
+// Draw everything waiting in the queue
 func (ts *terminalSession) render() {
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
-	// draw everything waiting in the queue to the screen
-	for pos, line := range ts.drawQueue {
+	for _, drawInstr := range ts.drawQueue {
 		// The line with index 0 is drawn on position 1
-		ts.moveCursorTo(1, pos+1)
-		ts.eraseLine()
-		ts.drawLine(line)
+		ts.moveCursorTo(drawInstr.x+1, drawInstr.y+1)
+		ts.drawLine(drawInstr.line)
 
-		delete(ts.drawQueue, pos)
 	}
-	// This gets called every frame, hugely unnececary
-	// Has to change
-	ts.drawScrollbars()
+	// Empty the queue after we are done drawing
+	ts.drawQueue = ts.drawQueue[:0]
+}
+
+func (ts *terminalSession) refreshQueue() {
+	ts.emptyDrawQueue()
+	ts.queueClearScreen()
+	ts.queueFiles()
+	ts.queueScrollbars()
+	ts.queueBottomBar()
 }
 
 func (ts *terminalSession) emptyDrawQueue() {
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
-	for i := range ts.drawQueue {
-		delete(ts.drawQueue, i)
-	}
+	ts.drawQueue = ts.drawQueue[:0]
 }
 
 func (ts *terminalSession) drawLine(line string) {
 	fmt.Fprint(ts.out, line)
 }
 
-func (ts *terminalSession) clearScreen() {
-	fmt.Fprint(ts.out, CSI+ClearScreenSeq)
-}
+// This causes annoying flicker in my program, will need to solve this
+func (ts *terminalSession) queueClearScreen() {
+	ts.mu.Lock()
+	defer ts.mu.Unlock()
 
-// Unused
-func (ts *terminalSession) eraseLine() {
-	fmt.Fprint(ts.out, CSI+EraseLineSeq)
+	clearInstr := drawInstruction{
+		x:    0,
+		y:    0,
+		line: CSI + ClearScreenSeq,
+	}
+	ts.drawQueue = append(ts.drawQueue, clearInstr)
 }
 
 func (ts *terminalSession) moveCursorTo(x, y int) {
 	fmt.Fprintf(ts.out, CSI+MoseCursorToSeq, y, x)
-}
-
-func (ts *terminalSession) GetCurrentSize() (err error) {
-	width, height, err := term.GetSize(ts.fdIn)
-	if err != nil {
-		return err
-	}
-	ts.width, ts.height = width, height
-	return nil
 }

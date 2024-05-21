@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-func (ts *terminalSession) addBottomBarToQueue() {
+func (ts *terminalSession) queueBottomBar() {
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
@@ -48,7 +48,13 @@ func (ts *terminalSession) addBottomBarToQueue() {
 	position = StyleFgBlack + StyleBgBlue + position + StyleReset
 	line = StyleBgWhite + StyleFgBlack + line + StyleReset + position
 
-	ts.drawQueue[ts.height-2] = line
+	drawInstr := drawInstruction{
+		x:    0,
+		y:    ts.height - 2,
+		line: line,
+	}
+
+	ts.drawQueue = append(ts.drawQueue, drawInstr)
 
 	// Now we get the second line, which for now only holds the file permissions
 	fileInfo, err := ts.cwdFiles[ts.selectionPos].Info()
@@ -58,5 +64,11 @@ func (ts *terminalSession) addBottomBarToQueue() {
 	}
 	filePerms := fileInfo.Mode().String()
 
-	ts.drawQueue[ts.height-1] = filePerms
+	drawInstr = drawInstruction{
+		x:    0,
+		y:    ts.height - 1,
+		line: filePerms,
+	}
+
+	ts.drawQueue = append(ts.drawQueue, drawInstr)
 }

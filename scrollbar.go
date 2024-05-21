@@ -1,15 +1,22 @@
 package main
 
-func (ts terminalSession) drawScrollbars() {
+func (ts *terminalSession) queueScrollbars() {
+	ts.mu.Lock()
+	defer ts.mu.Unlock()
+
 	// First screen scrollbar
-	ts.drawScrollbar(ts.width/2, ts.height-2)
+	ts.queueScrollbar(ts.width/2, ts.height-BottomRows)
 	// Second screen scrollbar
-	ts.drawScrollbar(ts.width, ts.height-2)
+	ts.queueScrollbar(ts.width, ts.height-BottomRows)
 }
 
-func (ts terminalSession) drawScrollbar(x int, height int) {
+func (ts *terminalSession) queueScrollbar(x int, height int) {
 	for i := range height {
-		ts.moveCursorTo(x, i+1)
-		ts.drawLine(StyleFgBlue + "┃" + StyleReset)
+		drawInstr := drawInstruction{
+			x:    x,
+			y:    i,
+			line: StyleFgBlue + "┃" + StyleReset,
+		}
+		ts.drawQueue = append(ts.drawQueue, drawInstr)
 	}
 }

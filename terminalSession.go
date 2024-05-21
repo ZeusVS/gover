@@ -24,12 +24,18 @@ type terminalSession struct {
 	originalState *term.State
 	fdIn          int
 
-	drawQueue    map[int]string
+	drawQueue    []drawInstruction
 	cwd          string
 	cwdFiles     []os.DirEntry
 	selectionPos int
 	width        int
 	height       int
+}
+
+type drawInstruction struct {
+	x    int
+	y    int
+	line string
 }
 
 // Initialise the terminal screen
@@ -64,7 +70,7 @@ func StartTerminalSession() (terminalSession, error) {
 		originalState: originalState,
 		fdIn:          fdIn,
 
-		drawQueue:    make(map[int]string),
+		drawQueue:    []drawInstruction{},
 		cwd:          cwd,
 		selectionPos: 0,
 	}
@@ -85,14 +91,14 @@ func StartTerminalSession() (terminalSession, error) {
 	if err != nil {
 		return terminalSession{}, err
 	}
-	ts.addFilesToQueue()
-	ts.addBottomBarToQueue()
+
+	ts.refreshQueue()
 
 	return ts, nil
 }
 
 // Stop the session and return the terminal to it's initial state
-func (ts terminalSession) StopTerminalSession() {
+func (ts *terminalSession) StopTerminalSession() {
 	// Exit the alt screen
 	fmt.Fprint(ts.out, CSI+ExitAltScreenSeq)
 	// Show the cursor again

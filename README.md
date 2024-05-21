@@ -1,6 +1,7 @@
 # Gover
 ## Terminal file manager in go
 The current state of the program is very alpha.
+Please note, this file manager only works on linux for now!
 
 ### Etymology:
 Word blend of
