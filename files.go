@@ -11,8 +11,14 @@ const (
 	BottomRows = 2
 )
 
-func (ts *terminalSession) queueFiles() {
-	for i, dirEntry := range ts.cwdFiles {
+func (ts *terminalSession) queueMainFiles() {
+	// The width of the main file pane is defined
+	width := ts.width/2 - 1
+	ts.queueFiles(ts.cwdFiles, 0, width)
+}
+
+func (ts *terminalSession) queueFiles(dirEntries []os.DirEntry, col int, width int) {
+	for i, dirEntry := range dirEntries {
 		// TODO: make this based on a view min and view max so that we can 'scroll'
 		if i > ts.height-1-BottomRows {
 			break
@@ -31,20 +37,20 @@ func (ts *terminalSession) queueFiles() {
 		if file.Mode()&os.ModeSymlink != 0 {
 			// Error handling???
 			link, err = filepath.EvalSymlinks(filepath.Join(ts.cwd, file.Name()))
-			line = ts.getLinkLine(i, file, link)
+			line = ts.getLinkLine(width, i, file, link)
 
 		} else if file.IsDir() {
-			line = ts.getDirLine(i, file)
+			line = ts.getDirLine(width, i, file)
 
 		} else if file.Mode()&0111 != 0 {
-			line = ts.getExeLine(i, file)
+			line = ts.getExeLine(width, i, file)
 
 		} else {
-			line = ts.getFileLine(i, file)
+			line = ts.getFileLine(width, i, file)
 		}
 
 		drawInstr := drawInstruction{
-			x:    0,
+			x:    col,
 			y:    i,
 			line: line,
 		}
@@ -52,25 +58,23 @@ func (ts *terminalSession) queueFiles() {
 		ts.drawQueue = append(ts.drawQueue, drawInstr)
 	}
 
-    // We will write blank lines under the files to clear the files pane
-    blanklines := ts.height - 1 - BottomRows -len(ts.cwdFiles)
-    if blanklines > 0 {
-        for i := len(ts.cwdFiles); i < ts.height - BottomRows; i++ {
-            line := ts.addPadding("")
+	// We will write blank lines under the files to clear the files pane
+	blanklines := ts.height - 1 - BottomRows - len(dirEntries)
+	for i := range blanklines {
+		line := addPadding("", " ", width)
 
-            drawInstr := drawInstruction{
-                x:    0,
-                y:    i,
-                line: line,
-            }
-            ts.drawQueue = append(ts.drawQueue, drawInstr)
-        }
-    }
+		drawInstr := drawInstruction{
+			x:    col,
+			y:    len(dirEntries) + i,
+			line: line,
+		}
+		ts.drawQueue = append(ts.drawQueue, drawInstr)
+	}
 }
 
-func (ts *terminalSession) getDirLine(i int, file os.FileInfo) string {
+func (ts *terminalSession) getDirLine(width int, i int, file os.FileInfo) string {
 	line := DirectoryIcon + " " + file.Name()
-	line = ts.addPadding(line)
+	line = addPadding(line, " ", width)
 	// Add amount of directories under this directory here
 
 	if i == ts.selectionPos {
@@ -81,9 +85,9 @@ func (ts *terminalSession) getDirLine(i int, file os.FileInfo) string {
 	return line
 }
 
-func (ts *terminalSession) getExeLine(i int, file os.FileInfo) string {
+func (ts *terminalSession) getExeLine(width int, i int, file os.FileInfo) string {
 	line := ExecutableIcon + " " + file.Name() + "*"
-	line = ts.addPadding(line)
+	line = addPadding(line, " ", width)
 	// Add filesize here
 
 	if i == ts.selectionPos {
@@ -94,9 +98,9 @@ func (ts *terminalSession) getExeLine(i int, file os.FileInfo) string {
 	return line
 }
 
-func (ts *terminalSession) getFileLine(i int, file os.FileInfo) string {
+func (ts *terminalSession) getFileLine(width int, i int, file os.FileInfo) string {
 	line := FileIcon + " " + file.Name()
-	line = ts.addPadding(line)
+	line = addPadding(line, " ", width)
 	// Add filesize here
 
 	if i == ts.selectionPos {
@@ -105,10 +109,10 @@ func (ts *terminalSession) getFileLine(i int, file os.FileInfo) string {
 	return line
 }
 
-func (ts *terminalSession) getLinkLine(i int, file os.FileInfo, link string) string {
+func (ts *terminalSession) getLinkLine(width int, i int, file os.FileInfo, link string) string {
 	// TODO: Change icon based on link isdir
 	line := LinkDirIcon + " " + file.Name() + " => " + link
-	line = ts.addPadding(line)
+	line = addPadding(line, " ", width)
 
 	if i == ts.selectionPos {
 		line = StyleBgCyan + StyleFgBlack + line + StyleReset
@@ -118,13 +122,12 @@ func (ts *terminalSession) getLinkLine(i int, file os.FileInfo, link string) str
 	return line
 }
 
-func (ts *terminalSession) addPadding(line string) string {
-	// We use runes here because of the unicode character used
-	// Make the selection box half the console's width wide
-	// Minus one for the scrollbar
-	addedSpaces := ts.width/2 - len([]rune(line))
+func addPadding(line string, padChar string, padWidth int) string {
+	// Add spaces to make it fill the file pane slot
+	// Rounded down width
+	addedSpaces := padWidth - len([]rune(line))
 	if addedSpaces > 0 {
-		line = fmt.Sprintf("%s%s", line, strings.Repeat(" ", addedSpaces))
+		line = fmt.Sprintf("%s%s", line, strings.Repeat(padChar, addedSpaces))
 	}
 	// line = string([]rune(line)[:ts.width/2])
 	return line

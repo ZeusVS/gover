@@ -27,13 +27,13 @@ func (ts *terminalSession) render() {
 	}
 
 	// Empty the queue after we are done drawing
-    ts.emptyDrawQueue()
+	ts.emptyDrawQueue()
 }
 
 func (ts *terminalSession) refreshQueue() {
 	ts.emptyDrawQueue()
-	ts.queueFiles()
-    ts.queuePreview()
+	ts.queueMainFiles()
+	ts.queuePreview()
 	ts.queueScrollbars()
 	ts.queueBottomBar()
 }

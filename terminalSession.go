@@ -13,13 +13,13 @@ import (
 
 const (
 	// For now we will lock the framerate at 60fps
-	framerate = 60
+	framerate = 75
 )
 
 type terminalSession struct {
 	mu     *sync.Mutex
 	out    io.Writer
-    buffer *bytes.Buffer
+	buffer *bytes.Buffer
 	ticker *time.Ticker
 	done   chan struct{}
 
@@ -63,12 +63,12 @@ func StartTerminalSession() (terminalSession, error) {
 		return terminalSession{}, err
 	}
 
-    buffer := new(bytes.Buffer)
-    
+	buffer := new(bytes.Buffer)
+
 	ts := terminalSession{
 		mu:     mu,
 		out:    os.Stdout,
-        buffer: buffer,
+		buffer: buffer,
 		ticker: ticker,
 		done:   done,
 
@@ -92,7 +92,7 @@ func StartTerminalSession() (terminalSession, error) {
 	}
 
 	// Get the initial files in the current working directory
-    ts.cwdFiles, err = os.ReadDir(ts.cwd)
+	ts.cwdFiles, err = os.ReadDir(ts.cwd)
 	if err != nil {
 		return terminalSession{}, err
 	}

@@ -6,44 +6,44 @@ import (
 )
 
 func (ts *terminalSession) moveSelectionUp() {
-    ts.mu.Lock()
-    defer ts.mu.Unlock()
+	ts.mu.Lock()
+	defer ts.mu.Unlock()
 
 	ts.selectionPos = ts.selectionPos - 1
 	if ts.selectionPos < 0 {
 		ts.selectionPos = 0
-        return
+		return
 	}
 
 	ts.refreshQueue()
 }
 
 func (ts *terminalSession) moveSelectionDown() {
-    ts.mu.Lock()
-    defer ts.mu.Unlock()
+	ts.mu.Lock()
+	defer ts.mu.Unlock()
 
 	ts.selectionPos = ts.selectionPos + 1
 	if ts.selectionPos > len(ts.cwdFiles)-1 {
 		ts.selectionPos = len(ts.cwdFiles) - 1
-        return
+		return
 	}
 
 	ts.refreshQueue()
 }
 
 func (ts *terminalSession) moveUpDir() {
-    ts.mu.Lock()
-    defer ts.mu.Unlock()
+	ts.mu.Lock()
+	defer ts.mu.Unlock()
 
 	_, fileName := filepath.Split(ts.cwd)
 	ts.cwd = filepath.Dir(ts.cwd)
 
-    cwdFiles, err := os.ReadDir(ts.cwd)
-    if err != nil {
-        ts.mu.Unlock()
-        return
-    }
-    ts.cwdFiles = cwdFiles
+	cwdFiles, err := os.ReadDir(ts.cwd)
+	if err != nil {
+		ts.mu.Unlock()
+		return
+	}
+	ts.cwdFiles = cwdFiles
 
 	// Get the index of the directory we just moved out of to select it
 	for i, file := range ts.cwdFiles {
@@ -56,8 +56,8 @@ func (ts *terminalSession) moveUpDir() {
 }
 
 func (ts *terminalSession) moveDownDir() {
-    ts.mu.Lock()
-    defer ts.mu.Unlock()
+	ts.mu.Lock()
+	defer ts.mu.Unlock()
 
 	// If the selection isn't a directory do nothing
 	// Should I add symlink directories as well?

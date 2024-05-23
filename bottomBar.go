@@ -31,16 +31,36 @@ func (ts *terminalSession) queueBottomBar() {
 			line = "~" + line
 		}
 	}
+	// Add a single space padding before and after the title
+	line = " " + line + " "
 
-	// Make the length fit
-	if len(line)+len(position) <= ts.width {
-		spacesToAdd := ts.width - len(line) - len(position)
-		// TODO: add default background color
-		// Will probably have to add termenv because it's not that easy
+	// Make the length short enough
+	for len(line)+len(position) > ts.width {
+		line, _ = strings.CutPrefix(line, " </")
+		splitLine := strings.SplitN(line, "/", 2)
+		if len(splitLine) > 1 {
+			line = " </" + strings.SplitN(line, "/", 2)[1]
+		} else {
+			// Now we need to remove letter per letter
+			line = " </" + line[1:]
+
+			// If the line is " </ " we need to break out of this loop
+			if len(line) == 4 {
+				break
+			}
+		}
+	}
+
+	spacesToAdd := ts.width - len(line) - len(position)
+	if spacesToAdd >= 0 {
 		line += strings.Repeat(" ", spacesToAdd)
 	} else {
-		// What to do if width is too long???
+		// Just trim if the width of the terminal is this small
+		line = line[:ts.width-len(position)]
 	}
+
+	// TODO: add terminal's default background color
+	// Will probably have to add termenv because it's not that easy
 	// Add color put the strings together
 	position = StyleFgBlack + StyleBgBlue + position + StyleReset
 	line = StyleBgWhite + StyleFgBlack + line + StyleReset + position
@@ -53,7 +73,7 @@ func (ts *terminalSession) queueBottomBar() {
 
 	ts.drawQueue = append(ts.drawQueue, drawInstr)
 
-    // Do we need to pad this line with spaces to clear the screen here?
+	// Do we need to pad this line with spaces to clear the screen here?
 	// Now we get the second line, which for now only holds the file permissions
 	fileInfo, err := ts.cwdFiles[ts.selectionPos].Info()
 	if err != nil {

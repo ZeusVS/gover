@@ -22,6 +22,9 @@ const (
 	StyleFgCyan   = CSI + "36m"
 	StyleFgWhite  = CSI + "37m"
 
+	// Bright foreground colors
+	StyleFgBlackBright = CSI + "90m"
+
 	// Regular background colors
 	StyleBgBlack  = CSI + "40m"
 	StyleBgRed    = CSI + "41m"

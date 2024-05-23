@@ -2,9 +2,9 @@ package main
 
 func (ts *terminalSession) queueScrollbars() {
 	// First screen scrollbar
-	ts.queueScrollbar(ts.width/2, ts.height-BottomRows)
+	ts.queueScrollbar(ts.width/2-1, ts.height-BottomRows)
 	// Second screen scrollbar
-	ts.queueScrollbar(ts.width, ts.height-BottomRows)
+	ts.queueScrollbar(ts.width-1, ts.height-BottomRows)
 }
 
 func (ts *terminalSession) queueScrollbar(x int, height int) {
