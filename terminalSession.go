@@ -42,32 +42,33 @@ type drawInstruction struct {
 
 // Initialise the terminal screen
 func StartTerminalSession() (terminalSession, error) {
-	// Get the terminal input file descriptor
-	fdIn := int(os.Stdin.Fd())
-
-	// Create a new mutex
 	mu := &sync.Mutex{}
+	out := os.Stdout
+	buffer := new(bytes.Buffer)
+	ticker := time.NewTicker(time.Millisecond * 1000 / framerate)
+	done := make(chan struct{})
 
-	// Put the terminal in raw mode
+	fdIn := int(os.Stdin.Fd())
+	// Put the terminal in raw mode and remember the original state
 	originalState, err := term.MakeRaw(fdIn)
 	if err != nil {
 		return terminalSession{}, err
 	}
-
-	ticker := time.NewTicker(time.Millisecond * 1000 / framerate)
-	done := make(chan struct{})
 
 	// Get the current working directory
 	cwd, err := os.Getwd()
 	if err != nil {
 		return terminalSession{}, err
 	}
-
-	buffer := new(bytes.Buffer)
+	// Get the initial files in the current working directory
+	cwdFiles, err := os.ReadDir(cwd)
+	if err != nil {
+		return terminalSession{}, err
+	}
 
 	ts := terminalSession{
 		mu:     mu,
-		out:    os.Stdout,
+		out:    out,
 		buffer: buffer,
 		ticker: ticker,
 		done:   done,
@@ -78,6 +79,7 @@ func StartTerminalSession() (terminalSession, error) {
 		drawQueue:    []drawInstruction{},
 		cwd:          cwd,
 		selectionPos: 0,
+		cwdFiles:     cwdFiles,
 	}
 
 	// Hide the cursor
@@ -85,19 +87,8 @@ func StartTerminalSession() (terminalSession, error) {
 	// Enter the alt screen
 	fmt.Fprint(ts.out, CSI+AltScreenSeq)
 
-	// Get the initial size of the terminal
-	err = ts.GetCurrentSize()
-	if err != nil {
-		return terminalSession{}, err
-	}
-
-	// Get the initial files in the current working directory
-	ts.cwdFiles, err = os.ReadDir(ts.cwd)
-	if err != nil {
-		return terminalSession{}, err
-	}
-
-	ts.refreshQueue()
+	// Set the initial state of the terminalSession
+	ts.resize()
 
 	return ts, nil
 }

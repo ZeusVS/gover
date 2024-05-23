@@ -6,19 +6,13 @@ func (ts *terminalSession) resize() {
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
-	err := ts.GetCurrentSize()
+	width, height, err := term.GetSize(ts.fdIn)
 	if err != nil {
 		return
 	}
 
-	ts.refreshQueue()
-}
+	ts.width = width
+	ts.height = height
 
-func (ts *terminalSession) GetCurrentSize() (err error) {
-	width, height, err := term.GetSize(ts.fdIn)
-	if err != nil {
-		return err
-	}
-	ts.width, ts.height = width, height
-	return nil
+	ts.refreshQueue()
 }

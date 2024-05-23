@@ -59,7 +59,7 @@ func (ts *terminalSession) queueFiles(dirEntries []os.DirEntry, col int, width i
 	}
 
 	// We will write blank lines under the files to clear the files pane
-	blanklines := ts.height - 1 - BottomRows - len(dirEntries)
+	blanklines := ts.height - BottomRows - len(dirEntries)
 	for i := range blanklines {
 		line := addPadding("", " ", width)
 
