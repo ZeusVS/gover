@@ -32,6 +32,9 @@ type terminalSession struct {
 	selectionPos int
 	width        int
 	height       int
+
+	mainOffset    int
+	previewOffset int
 }
 
 type drawInstruction struct {
@@ -80,6 +83,9 @@ func StartTerminalSession() (terminalSession, error) {
 		cwd:          cwd,
 		selectionPos: 0,
 		cwdFiles:     cwdFiles,
+
+		mainOffset:    0,
+		previewOffset: 0,
 	}
 
 	// Hide the cursor

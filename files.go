@@ -14,14 +14,13 @@ const (
 func (ts *terminalSession) queueMainFiles() {
 	// The width of the main file pane is defined
 	width := ts.width/2 - 1
-	ts.queueFiles(ts.cwdFiles, 0, width)
+	ts.queueFiles(ts.cwdFiles, ts.mainOffset, 0, width)
 }
 
-func (ts *terminalSession) queueFiles(dirEntries []os.DirEntry, col int, width int) {
+func (ts *terminalSession) queueFiles(dirEntries []os.DirEntry, offset int, col int, width int) {
 	for i, dirEntry := range dirEntries {
-		// TODO: make this based on a view min and view max so that we can 'scroll'
-		if i > ts.height-1-BottomRows {
-			break
+		if i < offset || i > ts.height+offset-1-BottomRows {
+			continue
 		}
 
 		file, err := dirEntry.Info()
@@ -51,7 +50,7 @@ func (ts *terminalSession) queueFiles(dirEntries []os.DirEntry, col int, width i
 
 		drawInstr := drawInstruction{
 			x:    col,
-			y:    i,
+			y:    i - offset,
 			line: line,
 		}
 

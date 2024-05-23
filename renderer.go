@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io"
 )
 
 func (ts *terminalSession) startRendering() {
@@ -21,9 +22,9 @@ func (ts *terminalSession) render() {
 	defer ts.mu.Unlock()
 
 	for _, drawInstr := range ts.drawQueue {
-		// The line with index 0 is drawn on position 1
-		ts.moveCursorTo(drawInstr.x+1, drawInstr.y+1)
-		ts.drawLine(drawInstr.line)
+		// The line with index 0 is drawn on position 1 in both x and y direction
+		moveCursorTo(ts.out, drawInstr.x+1, drawInstr.y+1)
+		fmt.Fprint(ts.out, drawInstr.line)
 	}
 
 	// Empty the queue after we are done drawing
@@ -42,10 +43,6 @@ func (ts *terminalSession) emptyDrawQueue() {
 	ts.drawQueue = ts.drawQueue[:0]
 }
 
-func (ts *terminalSession) drawLine(line string) {
-	fmt.Fprint(ts.out, line)
-}
-
-func (ts *terminalSession) moveCursorTo(x, y int) {
-	fmt.Fprintf(ts.out, CSI+MoseCursorToSeq, y, x)
+func moveCursorTo(out io.Writer, x, y int) {
+	fmt.Fprintf(out, CSI+MoseCursorToSeq, y, x)
 }

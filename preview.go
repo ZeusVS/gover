@@ -9,6 +9,7 @@ import (
 // TODO: Very rough draft
 // Issues:
 // ts.selectionPos also colors selected field in the preview pane
+// Links don't show up properly in preview pane (only see => not the actual destination)
 
 // Preview types:
 // Directories DONE
@@ -33,7 +34,7 @@ func (ts *terminalSession) queuePreview() {
 			return
 		}
 
-		ts.queueFiles(newFiles, ts.width/2, width)
+		ts.queueFiles(newFiles, ts.previewOffset, ts.width/2, width)
 	} else {
 		for i := range ts.height - BottomRows {
 			line := StyleFgBlackBright + addPadding("", "╱", width) + StyleReset
