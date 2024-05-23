@@ -9,6 +9,7 @@ func (ts *terminalSession) moveSelectionUp() {
 	ts.selectionPos = ts.selectionPos - 1
 	if ts.selectionPos < 0 {
 		ts.selectionPos = 0
+        return
 	}
 
 	ts.refreshQueue()
@@ -18,6 +19,7 @@ func (ts *terminalSession) moveSelectionDown() {
 	ts.selectionPos = ts.selectionPos + 1
 	if ts.selectionPos > len(ts.cwdFiles)-1 {
 		ts.selectionPos = len(ts.cwdFiles) - 1
+        return
 	}
 
 	ts.refreshQueue()

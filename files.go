@@ -63,6 +63,21 @@ func (ts *terminalSession) queueFiles() {
 
 		ts.drawQueue = append(ts.drawQueue, drawInstr)
 	}
+
+    // We will write blank lines under the files to clear the files pane
+    blanklines := ts.height - 1 - BottomRows -len(ts.cwdFiles)
+    if blanklines > 0 {
+        for i := len(ts.cwdFiles); i < ts.height - BottomRows; i++ {
+            line := ts.addPadding("")
+
+            drawInstr := drawInstruction{
+                x:    0,
+                y:    i,
+                line: line,
+            }
+            ts.drawQueue = append(ts.drawQueue, drawInstr)
+        }
+    }
 }
 
 func (ts *terminalSession) getDirLine(i int, file os.FileInfo) string {
@@ -119,7 +134,7 @@ func (ts *terminalSession) addPadding(line string) string {
 	// We use runes here because of the unicode character used
 	// Make the selection box half the console's width wide
 	// Minus one for the scrollbar
-	addedSpaces := ts.width/2 - len([]rune(line)) - 1
+	addedSpaces := ts.width/2 - len([]rune(line))
 	if addedSpaces > 0 {
 		line = fmt.Sprintf("%s%s", line, strings.Repeat(" ", addedSpaces))
 	}

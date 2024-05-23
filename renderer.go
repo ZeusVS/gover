@@ -24,15 +24,14 @@ func (ts *terminalSession) render() {
 		// The line with index 0 is drawn on position 1
 		ts.moveCursorTo(drawInstr.x+1, drawInstr.y+1)
 		ts.drawLine(drawInstr.line)
-
 	}
+
 	// Empty the queue after we are done drawing
 	ts.drawQueue = ts.drawQueue[:0]
 }
 
 func (ts *terminalSession) refreshQueue() {
 	ts.emptyDrawQueue()
-	ts.queueClearScreen()
 	ts.queueFiles()
 	ts.queueScrollbars()
 	ts.queueBottomBar()
@@ -47,19 +46,6 @@ func (ts *terminalSession) emptyDrawQueue() {
 
 func (ts *terminalSession) drawLine(line string) {
 	fmt.Fprint(ts.out, line)
-}
-
-// This causes annoying flicker in my program, will need to solve this
-func (ts *terminalSession) queueClearScreen() {
-	ts.mu.Lock()
-	defer ts.mu.Unlock()
-
-	clearInstr := drawInstruction{
-		x:    0,
-		y:    0,
-		line: CSI + ClearScreenSeq,
-	}
-	ts.drawQueue = append(ts.drawQueue, clearInstr)
 }
 
 func (ts *terminalSession) moveCursorTo(x, y int) {

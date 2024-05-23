@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"io"
 	"os"
@@ -18,6 +19,7 @@ const (
 type terminalSession struct {
 	mu     *sync.Mutex
 	out    io.Writer
+    buffer *bytes.Buffer
 	ticker *time.Ticker
 	done   chan struct{}
 
@@ -61,9 +63,12 @@ func StartTerminalSession() (terminalSession, error) {
 		return terminalSession{}, err
 	}
 
+    buffer := new(bytes.Buffer)
+    
 	ts := terminalSession{
 		mu:     mu,
 		out:    os.Stdout,
+        buffer: buffer,
 		ticker: ticker,
 		done:   done,
 

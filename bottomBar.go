@@ -56,6 +56,7 @@ func (ts *terminalSession) queueBottomBar() {
 
 	ts.drawQueue = append(ts.drawQueue, drawInstr)
 
+    // Do we need to pad this line with spaces to clear the screen here?
 	// Now we get the second line, which for now only holds the file permissions
 	fileInfo, err := ts.cwdFiles[ts.selectionPos].Info()
 	if err != nil {
