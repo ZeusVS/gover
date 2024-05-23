@@ -6,7 +6,6 @@ import (
 	"path/filepath"
 )
 
-// TODO: Very rough draft
 // Issues:
 // ts.selectionPos also colors selected field in the preview pane
 // Links don't show up properly in preview pane (only see => not the actual destination)
@@ -26,17 +25,18 @@ func (ts *terminalSession) queuePreview() {
 
 	if ts.cwdFiles[ts.selectionPos].IsDir() {
 		// Get the files under the currently selected dir
-		// TODO: We could add this to our terminalSession struct so that we do not have to do this again in the goDownDir action?
 		fileName := ts.cwdFiles[ts.selectionPos].Name()
-		newDir := filepath.Join(ts.cwd, fileName)
-		newFiles, err := os.ReadDir(newDir)
+		previewDir := filepath.Join(ts.cwd, fileName)
+		previewFiles, err := os.ReadDir(previewDir)
+		ts.previewLen = len(previewFiles)
 		if err != nil {
 			return
 		}
 
-		ts.queueFiles(newFiles, ts.previewOffset, ts.width/2, width)
+		ts.queueFiles(previewFiles, ts.previewOffset, ts.width/2, width)
 	} else {
-		for i := range ts.height - BottomRows {
+		ts.previewLen = ts.height - BottomRows
+		for i := range ts.previewLen {
 			line := StyleFgBlackBright + addPadding("", "╱", width) + StyleReset
 			drawInstr := drawInstruction{
 				x:    ts.width / 2,

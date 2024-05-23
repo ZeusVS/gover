@@ -29,6 +29,7 @@ type terminalSession struct {
 	drawQueue    []drawInstruction
 	cwd          string
 	cwdFiles     []os.DirEntry
+	previewLen   int
 	selectionPos int
 	width        int
 	height       int
