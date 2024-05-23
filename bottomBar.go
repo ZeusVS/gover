@@ -7,9 +7,6 @@ import (
 )
 
 func (ts *terminalSession) queueBottomBar() {
-	ts.mu.Lock()
-	defer ts.mu.Unlock()
-
 	// Get the index of the selected item
 	selectionIndex := ts.selectionPos + 1
 	totalFiles := len(ts.cwdFiles)

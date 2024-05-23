@@ -11,19 +11,7 @@ const (
 	BottomRows = 2
 )
 
-func (ts *terminalSession) getFiles() error {
-	ts.mu.Lock()
-	defer ts.mu.Unlock()
-
-	var err error
-	ts.cwdFiles, err = os.ReadDir(ts.cwd)
-	return err
-}
-
 func (ts *terminalSession) queueFiles() {
-	ts.mu.Lock()
-	defer ts.mu.Unlock()
-
 	for i, dirEntry := range ts.cwdFiles {
 		// TODO: make this based on a view min and view max so that we can 'scroll'
 		if i > ts.height-1-BottomRows {

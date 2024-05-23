@@ -1,9 +1,6 @@
 package main
 
 func (ts *terminalSession) queueScrollbars() {
-	ts.mu.Lock()
-	defer ts.mu.Unlock()
-
 	// First screen scrollbar
 	ts.queueScrollbar(ts.width/2, ts.height-BottomRows)
 	// Second screen scrollbar

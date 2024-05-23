@@ -3,9 +3,12 @@ package main
 import "golang.org/x/term"
 
 func (ts *terminalSession) resize() {
+    ts.mu.Lock()
+    defer ts.mu.Unlock()
+
 	err := ts.GetCurrentSize()
 	if err != nil {
-		return
+        return
 	}
 
 	ts.refreshQueue()

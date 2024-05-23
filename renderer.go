@@ -27,20 +27,18 @@ func (ts *terminalSession) render() {
 	}
 
 	// Empty the queue after we are done drawing
-	ts.drawQueue = ts.drawQueue[:0]
+    ts.emptyDrawQueue()
 }
 
 func (ts *terminalSession) refreshQueue() {
 	ts.emptyDrawQueue()
 	ts.queueFiles()
+    ts.queuePreview()
 	ts.queueScrollbars()
 	ts.queueBottomBar()
 }
 
 func (ts *terminalSession) emptyDrawQueue() {
-	ts.mu.Lock()
-	defer ts.mu.Unlock()
-
 	ts.drawQueue = ts.drawQueue[:0]
 }
 

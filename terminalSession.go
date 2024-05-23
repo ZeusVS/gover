@@ -92,7 +92,7 @@ func StartTerminalSession() (terminalSession, error) {
 	}
 
 	// Get the initial files in the current working directory
-	err = ts.getFiles()
+    ts.cwdFiles, err = os.ReadDir(ts.cwd)
 	if err != nil {
 		return terminalSession{}, err
 	}
