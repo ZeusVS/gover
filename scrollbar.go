@@ -10,6 +10,11 @@ func (ts *terminalSession) queueScrollbars() {
 }
 
 func (ts *terminalSession) queueScrollbar(x int, height int, offset int, contentHeight int) {
+	// To still show scrollbar if the content of the preview window is empty
+	if contentHeight == 0 {
+		contentHeight = 1
+	}
+
 	// Check amount of empty spaces to provide at the top
 	offsetPercentage := float64(offset) / float64(contentHeight)
 	offsetHeightFloat := offsetPercentage * float64(height)

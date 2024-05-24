@@ -14,10 +14,10 @@ const (
 func (ts *terminalSession) queueMainFiles() {
 	// The width of the main file pane is defined
 	width := ts.width/2 - 1
-	ts.queueFiles(ts.cwdFiles, ts.mainOffset, 0, width)
+	ts.queueFiles(ts.cwdFiles, ts.cwd, ts.mainOffset, 0, width)
 }
 
-func (ts *terminalSession) queueFiles(dirEntries []os.DirEntry, offset int, col int, width int) {
+func (ts *terminalSession) queueFiles(dirEntries []os.DirEntry, dir string, offset int, col int, width int) {
 	for i, dirEntry := range dirEntries {
 		if i < offset || i > ts.height+offset-1-BottomRows {
 			continue
@@ -31,12 +31,22 @@ func (ts *terminalSession) queueFiles(dirEntries []os.DirEntry, offset int, col 
 		var line string
 		var link string
 
-		// TODO: When there is a symlink I should check if the link points to
 		// a directory or a file
 		if file.Mode()&os.ModeSymlink != 0 {
-			// Error handling???
-			link, err = filepath.EvalSymlinks(filepath.Join(ts.cwd, file.Name()))
-			line = ts.getLinkLine(width, i, file, link)
+			link, err = filepath.EvalSymlinks(filepath.Join(dir, file.Name()))
+            if err != nil {
+                link = "Error: Link not found"
+            }
+
+            symbol := LinkDirIcon
+            linkInfo, err := os.Stat(link)
+            if err != nil {
+                symbol = "?"
+            }
+            if !linkInfo.IsDir() {
+                symbol = LinkFileIcon
+            }
+			line = ts.getLinkLine(width, i, file, link, symbol)
 
 		} else if file.IsDir() {
 			line = ts.getDirLine(width, i, file)
@@ -72,7 +82,7 @@ func (ts *terminalSession) queueFiles(dirEntries []os.DirEntry, offset int, col 
 }
 
 func (ts *terminalSession) getDirLine(width int, i int, file os.FileInfo) string {
-	line := DirectoryIcon + " " + file.Name()
+	line := " " + DirectoryIcon + " " + file.Name()
 	line = addPadding(line, " ", width)
 	// Add amount of directories under this directory here
 
@@ -85,7 +95,7 @@ func (ts *terminalSession) getDirLine(width int, i int, file os.FileInfo) string
 }
 
 func (ts *terminalSession) getExeLine(width int, i int, file os.FileInfo) string {
-	line := ExecutableIcon + " " + file.Name() + "*"
+	line := " " + ExecutableIcon + " " + file.Name() + "*"
 	line = addPadding(line, " ", width)
 	// Add filesize here
 
@@ -98,7 +108,7 @@ func (ts *terminalSession) getExeLine(width int, i int, file os.FileInfo) string
 }
 
 func (ts *terminalSession) getFileLine(width int, i int, file os.FileInfo) string {
-	line := FileIcon + " " + file.Name()
+	line := " " + FileIcon + " " + file.Name()
 	line = addPadding(line, " ", width)
 	// Add filesize here
 
@@ -108,9 +118,10 @@ func (ts *terminalSession) getFileLine(width int, i int, file os.FileInfo) strin
 	return line
 }
 
-func (ts *terminalSession) getLinkLine(width int, i int, file os.FileInfo, link string) string {
+func (ts *terminalSession) getLinkLine(width int, i int, file os.FileInfo, link string, icon string) string {
+    
 	// TODO: Change icon based on link isdir
-	line := LinkDirIcon + " " + file.Name() + " => " + link
+	line := " " + icon + " " + file.Name() + " => " + link
 	line = addPadding(line, " ", width)
 
 	if i == ts.selectionPos {

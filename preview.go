@@ -33,7 +33,7 @@ func (ts *terminalSession) queuePreview() {
 			return
 		}
 
-		ts.queueFiles(previewFiles, ts.previewOffset, ts.width/2, width)
+		ts.queueFiles(previewFiles, previewDir, ts.previewOffset, ts.width/2, width)
 	} else {
 		ts.previewLen = ts.height - BottomRows
 		for i := range ts.previewLen {
