@@ -5,37 +5,41 @@ import (
 	"path/filepath"
 )
 
-func (ts *terminalSession) moveSelectionUp() {
+func (ts *terminalSession) moveSelectionUp(n int) {
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
-	ts.selectionPos -= 1
-	// Do nothing if already at beginning
+	ts.command = ""
+	ts.selectionPos -= n
+
+	// Go back if we are before the beginning of the files
 	if ts.selectionPos < 0 {
 		ts.selectionPos = 0
-		return
 	}
 
+	// If the selection is outside of the range, set the offset
 	if ts.selectionPos < ts.mainOffset {
-		ts.mainOffset -= 1
+		ts.mainOffset = ts.selectionPos
 	}
 
 	ts.refreshQueue()
 }
 
-func (ts *terminalSession) moveSelectionDown() {
+func (ts *terminalSession) moveSelectionDown(n int) {
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
-	ts.selectionPos += 1
-	// Do nothing if already at end
+	ts.command = ""
+	ts.selectionPos += n
+
+	// Go back if we are beyond the end of the files
 	if ts.selectionPos > len(ts.cwdFiles)-1 {
 		ts.selectionPos = len(ts.cwdFiles) - 1
-		return
 	}
 
+	// If the selection is outside of the range, set the offset
 	if ts.selectionPos > ts.height+ts.mainOffset-1-BottomRows {
-		ts.mainOffset += 1
+		ts.mainOffset = ts.selectionPos - ts.height + 1 + BottomRows
 	}
 
 	ts.refreshQueue()
@@ -45,6 +49,7 @@ func (ts *terminalSession) moveUpDir() {
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
+	ts.command = ""
 	ts.mainOffset = 0
 
 	_, fileName := filepath.Split(ts.cwd)
@@ -74,6 +79,7 @@ func (ts *terminalSession) moveDownDir() {
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
+	ts.command = ""
 	ts.mainOffset = 0
 
 	// If the selection isn't a directory do nothing

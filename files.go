@@ -34,18 +34,18 @@ func (ts *terminalSession) queueFiles(dirEntries []os.DirEntry, dir string, offs
 		// a directory or a file
 		if file.Mode()&os.ModeSymlink != 0 {
 			link, err = filepath.EvalSymlinks(filepath.Join(dir, file.Name()))
-            if err != nil {
-                link = "Error: Link not found"
-            }
+			if err != nil {
+				link = "Error: Link not found"
+			}
 
-            symbol := LinkDirIcon
-            linkInfo, err := os.Stat(link)
-            if err != nil {
-                symbol = "?"
-            }
-            if !linkInfo.IsDir() {
-                symbol = LinkFileIcon
-            }
+			symbol := LinkDirIcon
+			linkInfo, err := os.Stat(link)
+			if err != nil {
+				symbol = "?"
+			}
+			if !linkInfo.IsDir() {
+				symbol = LinkFileIcon
+			}
 			line = ts.getLinkLine(width, i, file, link, symbol)
 
 		} else if file.IsDir() {
@@ -119,7 +119,7 @@ func (ts *terminalSession) getFileLine(width int, i int, file os.FileInfo) strin
 }
 
 func (ts *terminalSession) getLinkLine(width int, i int, file os.FileInfo, link string, icon string) string {
-    
+
 	// TODO: Change icon based on link isdir
 	line := " " + icon + " " + file.Name() + " => " + link
 	line = addPadding(line, " ", width)

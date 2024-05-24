@@ -10,12 +10,31 @@ import (
 
 const (
 	exit = 'q'
-	test = 'f'
 
 	up      = 'k'
 	down    = 'j'
-	dirup   = 'h'
-	dirdown = 'l'
+	dirUp   = 'h'
+	dirDown = 'l'
+
+	goTo     = 'g'
+	goBottom = 'G'
+	// TODO: add consts
+
+	// scroll preview up and down:
+	// up - c-u
+	// down - c-d
+
+	// s + ...
+	// d/D sort dirs first/last (default)
+	// a/A sort alphabetically
+	// n/N sort files by last open? date
+	// ???
+
+	// copy
+	// move
+	// paste
+	// remove
+	// ???
 )
 
 func (ts *terminalSession) startListening() {
@@ -23,12 +42,10 @@ func (ts *terminalSession) startListening() {
 	go ts.startResizeListener()
 }
 
-// TODO: Add multi char inputs
 func (ts *terminalSession) startKeyListener() {
 	r := bufio.NewReader(os.Stdin)
 	for {
 		ru, _, err := r.ReadRune()
-
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Error: reading key from Stdin: %s\r\n", err)
 		}
@@ -38,17 +55,30 @@ func (ts *terminalSession) startKeyListener() {
 			close(ts.done)
 			return
 
+		// Main panel move selection up
 		case ru == up:
-			ts.moveSelectionUp()
+			ts.moveSelectionUp(1)
+		// Main panel move selection down
 		case ru == down:
-			ts.moveSelectionDown()
-		case ru == dirup:
+			ts.moveSelectionDown(1)
+		// Main panel go dir level higher
+		case ru == dirUp:
 			ts.moveUpDir()
-		case ru == dirdown:
+		// Main panel go dir level lower
+		case ru == dirDown:
 			ts.moveDownDir()
-
-		case ru == test:
-			// Nothing to test atm
+		case ru == goTo:
+			// Main panel go to top
+			if ts.command == "g" {
+				ts.moveSelectionUp(len(ts.cwdFiles))
+			} else if ts.command == "" {
+				ts.command = "g"
+			} else {
+				ts.command = ""
+			}
+		// Main panel scroll to bottom
+		case ru == goBottom:
+			ts.moveSelectionDown(len(ts.cwdFiles))
 		}
 	}
 }

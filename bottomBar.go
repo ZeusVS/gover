@@ -82,9 +82,6 @@ func (ts *terminalSession) queueBottomBar() {
 	}
 	filePerms := fileInfo.Mode().String()
 
-	// Debug in last line
-	filePerms += " " + strconv.Itoa(ts.mainOffset)
-
 	drawInstr = drawInstruction{
 		x:    0,
 		y:    ts.height - 1,
