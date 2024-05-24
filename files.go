@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 )
 
@@ -49,7 +50,7 @@ func (ts *terminalSession) queueFiles(dirEntries []os.DirEntry, dir string, offs
 			line = ts.getLinkLine(width, i, file, link, symbol)
 
 		} else if file.IsDir() {
-			line = ts.getDirLine(width, i, file)
+			line = ts.getDirLine(width, i, file, dir)
 
 		} else if file.Mode()&0111 != 0 {
 			line = ts.getExeLine(width, i, file)
@@ -81,10 +82,19 @@ func (ts *terminalSession) queueFiles(dirEntries []os.DirEntry, dir string, offs
 	}
 }
 
-func (ts *terminalSession) getDirLine(width int, i int, file os.FileInfo) string {
+func (ts *terminalSession) getDirLine(width int, i int, file os.FileInfo, dir string) string {
 	line := " " + DirectoryIcon + " " + file.Name()
-	line = addPadding(line, " ", width)
-	// Add amount of directories under this directory here
+    dirPath, err := os.ReadDir(filepath.Join(dir, file.Name()))
+    // Get the number of files underneath the directory
+    var dirAmt string
+    if err != nil {
+        dirAmt = " ? "
+    } else {
+        dirAmt = " " + strconv.Itoa(len(dirPath)) + " "
+    }
+
+	line = addPadding(line, " ", width-len(dirAmt))
+    line += dirAmt
 
 	if i == ts.selectionPos {
 		line = StyleBgBlue + StyleFgBlack + line + StyleReset
@@ -96,8 +106,11 @@ func (ts *terminalSession) getDirLine(width int, i int, file os.FileInfo) string
 
 func (ts *terminalSession) getExeLine(width int, i int, file os.FileInfo) string {
 	line := " " + ExecutableIcon + " " + file.Name() + "*"
-	line = addPadding(line, " ", width)
-	// Add filesize here
+    fileSize := getFileSize(file.Size())
+	line = addPadding(line, " ", width-len(fileSize))
+
+    line += fileSize
+
 
 	if i == ts.selectionPos {
 		line = StyleBgRed + StyleFgBlack + line + StyleReset
@@ -109,8 +122,9 @@ func (ts *terminalSession) getExeLine(width int, i int, file os.FileInfo) string
 
 func (ts *terminalSession) getFileLine(width int, i int, file os.FileInfo) string {
 	line := " " + FileIcon + " " + file.Name()
-	line = addPadding(line, " ", width)
-	// Add filesize here
+    fileSize := getFileSize(file.Size())
+	line = addPadding(line, " ", width-len(fileSize))
+    line += fileSize
 
 	if i == ts.selectionPos {
 		line = StyleBgWhite + StyleFgBlack + line + StyleReset
@@ -119,8 +133,6 @@ func (ts *terminalSession) getFileLine(width int, i int, file os.FileInfo) strin
 }
 
 func (ts *terminalSession) getLinkLine(width int, i int, file os.FileInfo, link string, icon string) string {
-
-	// TODO: Change icon based on link isdir
 	line := " " + icon + " " + file.Name() + " => " + link
 	line = addPadding(line, " ", width)
 
@@ -139,6 +151,52 @@ func addPadding(line string, padChar string, padWidth int) string {
 	if addedSpaces > 0 {
 		line = fmt.Sprintf("%s%s", line, strings.Repeat(padChar, addedSpaces))
 	}
-	// line = string([]rune(line)[:ts.width/2])
+
+    // Chop off part of the string if it's too large
+	line = string([]rune(line)[:padWidth])
 	return line
+}
+
+func getFileSize(size int64) string {
+    var sizeStr string
+    var unit string
+    // bytes
+    if size <= 1024 {
+        sizeStr = strconv.Itoa(int(size))
+        unit = "B"
+    } else {
+        sizeFloat := float64(size) / 1024.0
+        // kilobytes
+        if sizeFloat <= 1024 {
+            sizeStr = fmt.Sprintf("%.2f", sizeFloat)
+            unit = "K"
+        } else {
+            sizeFloat /= 1024.0
+            // megabytes
+            if sizeFloat <= 1024 {
+                sizeStr = fmt.Sprintf("%.2f", sizeFloat)
+                unit = "M"
+            } else {
+                sizeFloat /= 1024.0
+                // gigabytes
+                if sizeFloat <= 1024 {
+                    sizeStr = fmt.Sprintf("%.2f", sizeFloat)
+                    unit = "G"
+                } else {
+                    sizeFloat /= 1024.0
+                    // terabytes
+                    if sizeFloat <= 1024 {
+                        sizeStr = fmt.Sprintf("%.2f", sizeFloat)
+                        unit = "T"
+                    } else {
+                        // I think we can stop here, no?
+                    }
+                }
+            }
+        }
+    }
+
+    // Pad the sizestring with spaces for legibility
+    sizeStr = " " + sizeStr + " " + unit + " "
+    return sizeStr
 }

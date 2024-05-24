@@ -28,6 +28,7 @@ const (
 	// d/D sort dirs first/last (default)
 	// a/A sort alphabetically
 	// n/N sort files by last open? date
+	// s/S sort files by size
 	// ???
 
 	// copy
