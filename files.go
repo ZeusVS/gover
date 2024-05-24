@@ -15,10 +15,22 @@ const (
 func (ts *terminalSession) queueMainFiles() {
 	// The width of the main file pane is defined
 	width := ts.width/2 - 1
-	ts.queueFiles(ts.cwdFiles, ts.cwd, ts.mainOffset, 0, width)
+	ts.queueFiles(
+		ts.cwdFiles,
+		ts.cwd,
+		ts.mainOffset,
+		0,
+		width,
+		true) // We want to show the current selection in this panel
 }
 
-func (ts *terminalSession) queueFiles(dirEntries []os.DirEntry, dir string, offset int, col int, width int) {
+func (ts *terminalSession) queueFiles(
+	dirEntries []os.DirEntry,
+	dir string,
+	offset int,
+	col int,
+	width int,
+	selection bool) {
 	for i, dirEntry := range dirEntries {
 		if i < offset || i > ts.height+offset-1-BottomRows {
 			continue
@@ -47,16 +59,16 @@ func (ts *terminalSession) queueFiles(dirEntries []os.DirEntry, dir string, offs
 			if !linkInfo.IsDir() {
 				symbol = LinkFileIcon
 			}
-			line = ts.getLinkLine(width, i, file, link, symbol)
+			line = ts.getLinkLine(width, i, file, link, symbol, selection)
 
 		} else if file.IsDir() {
-			line = ts.getDirLine(width, i, file, dir)
+			line = ts.getDirLine(width, i, file, dir, selection)
 
 		} else if file.Mode()&0111 != 0 {
-			line = ts.getExeLine(width, i, file)
+			line = ts.getExeLine(width, i, file, selection)
 
 		} else {
-			line = ts.getFileLine(width, i, file)
+			line = ts.getFileLine(width, i, file, selection)
 		}
 
 		drawInstr := drawInstruction{
@@ -82,21 +94,21 @@ func (ts *terminalSession) queueFiles(dirEntries []os.DirEntry, dir string, offs
 	}
 }
 
-func (ts *terminalSession) getDirLine(width int, i int, file os.FileInfo, dir string) string {
+func (ts *terminalSession) getDirLine(width int, i int, file os.FileInfo, dir string, selection bool) string {
 	line := " " + DirectoryIcon + " " + file.Name()
-    dirPath, err := os.ReadDir(filepath.Join(dir, file.Name()))
-    // Get the number of files underneath the directory
-    var dirAmt string
-    if err != nil {
-        dirAmt = " ? "
-    } else {
-        dirAmt = " " + strconv.Itoa(len(dirPath)) + " "
-    }
+	dirPath, err := os.ReadDir(filepath.Join(dir, file.Name()))
+	// Get the number of files underneath the directory
+	var dirAmt string
+	if err != nil {
+		dirAmt = " ? "
+	} else {
+		dirAmt = " " + strconv.Itoa(len(dirPath)) + " "
+	}
 
 	line = addPadding(line, " ", width-len(dirAmt))
-    line += dirAmt
+	line += dirAmt
 
-	if i == ts.selectionPos {
+	if i == ts.selectionPos && selection {
 		line = StyleBgBlue + StyleFgBlack + line + StyleReset
 	} else {
 		line = StyleFgBlue + line + StyleReset
@@ -104,15 +116,14 @@ func (ts *terminalSession) getDirLine(width int, i int, file os.FileInfo, dir st
 	return line
 }
 
-func (ts *terminalSession) getExeLine(width int, i int, file os.FileInfo) string {
+func (ts *terminalSession) getExeLine(width int, i int, file os.FileInfo, selection bool) string {
 	line := " " + ExecutableIcon + " " + file.Name() + "*"
-    fileSize := getFileSize(file.Size())
+	fileSize := getFileSize(file.Size())
 	line = addPadding(line, " ", width-len(fileSize))
 
-    line += fileSize
+	line += fileSize
 
-
-	if i == ts.selectionPos {
+	if i == ts.selectionPos && selection {
 		line = StyleBgRed + StyleFgBlack + line + StyleReset
 	} else {
 		line = StyleFgRed + line + StyleReset
@@ -120,23 +131,23 @@ func (ts *terminalSession) getExeLine(width int, i int, file os.FileInfo) string
 	return line
 }
 
-func (ts *terminalSession) getFileLine(width int, i int, file os.FileInfo) string {
+func (ts *terminalSession) getFileLine(width int, i int, file os.FileInfo, selection bool) string {
 	line := " " + FileIcon + " " + file.Name()
-    fileSize := getFileSize(file.Size())
+	fileSize := getFileSize(file.Size())
 	line = addPadding(line, " ", width-len(fileSize))
-    line += fileSize
+	line += fileSize
 
-	if i == ts.selectionPos {
+	if i == ts.selectionPos && selection {
 		line = StyleBgWhite + StyleFgBlack + line + StyleReset
 	}
 	return line
 }
 
-func (ts *terminalSession) getLinkLine(width int, i int, file os.FileInfo, link string, icon string) string {
+func (ts *terminalSession) getLinkLine(width int, i int, file os.FileInfo, link string, icon string, selection bool) string {
 	line := " " + icon + " " + file.Name() + " => " + link
 	line = addPadding(line, " ", width)
 
-	if i == ts.selectionPos {
+	if i == ts.selectionPos && selection {
 		line = StyleBgCyan + StyleFgBlack + line + StyleReset
 	} else {
 		line = StyleFgCyan + line + StyleReset
@@ -152,51 +163,51 @@ func addPadding(line string, padChar string, padWidth int) string {
 		line = fmt.Sprintf("%s%s", line, strings.Repeat(padChar, addedSpaces))
 	}
 
-    // Chop off part of the string if it's too large
+	// Chop off part of the string if it's too large
 	line = string([]rune(line)[:padWidth])
 	return line
 }
 
 func getFileSize(size int64) string {
-    var sizeStr string
-    var unit string
-    // bytes
-    if size <= 1024 {
-        sizeStr = strconv.Itoa(int(size))
-        unit = "B"
-    } else {
-        sizeFloat := float64(size) / 1024.0
-        // kilobytes
-        if sizeFloat <= 1024 {
-            sizeStr = fmt.Sprintf("%.2f", sizeFloat)
-            unit = "K"
-        } else {
-            sizeFloat /= 1024.0
-            // megabytes
-            if sizeFloat <= 1024 {
-                sizeStr = fmt.Sprintf("%.2f", sizeFloat)
-                unit = "M"
-            } else {
-                sizeFloat /= 1024.0
-                // gigabytes
-                if sizeFloat <= 1024 {
-                    sizeStr = fmt.Sprintf("%.2f", sizeFloat)
-                    unit = "G"
-                } else {
-                    sizeFloat /= 1024.0
-                    // terabytes
-                    if sizeFloat <= 1024 {
-                        sizeStr = fmt.Sprintf("%.2f", sizeFloat)
-                        unit = "T"
-                    } else {
-                        // I think we can stop here, no?
-                    }
-                }
-            }
-        }
-    }
+	var sizeStr string
+	var unit string
+	// bytes
+	if size <= 1024 {
+		sizeStr = strconv.Itoa(int(size))
+		unit = "B"
+	} else {
+		sizeFloat := float64(size) / 1024.0
+		// kilobytes
+		if sizeFloat <= 1024 {
+			sizeStr = fmt.Sprintf("%.2f", sizeFloat)
+			unit = "K"
+		} else {
+			sizeFloat /= 1024.0
+			// megabytes
+			if sizeFloat <= 1024 {
+				sizeStr = fmt.Sprintf("%.2f", sizeFloat)
+				unit = "M"
+			} else {
+				sizeFloat /= 1024.0
+				// gigabytes
+				if sizeFloat <= 1024 {
+					sizeStr = fmt.Sprintf("%.2f", sizeFloat)
+					unit = "G"
+				} else {
+					sizeFloat /= 1024.0
+					// terabytes
+					if sizeFloat <= 1024 {
+						sizeStr = fmt.Sprintf("%.2f", sizeFloat)
+						unit = "T"
+					} else {
+						// I think we can stop here, no?
+					}
+				}
+			}
+		}
+	}
 
-    // Pad the sizestring with spaces for legibility
-    sizeStr = " " + sizeStr + " " + unit + " "
-    return sizeStr
+	// Pad the sizestring with spaces for legibility
+	sizeStr = " " + sizeStr + " " + unit + " "
+	return sizeStr
 }

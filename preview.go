@@ -33,7 +33,14 @@ func (ts *terminalSession) queuePreview() {
 			return
 		}
 
-		ts.queueFiles(previewFiles, previewDir, ts.previewOffset, ts.width/2, width)
+		ts.queueFiles(
+			previewFiles,
+			previewDir,
+			ts.previewOffset,
+			ts.width/2,
+			width,
+			false) // We do not want to get a selection in the preview panel
+
 	} else {
 		ts.previewLen = ts.height - BottomRows
 		for i := range ts.previewLen {

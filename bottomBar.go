@@ -12,10 +12,6 @@ func (ts *terminalSession) queueBottomBar() {
 	totalFiles := len(ts.cwdFiles)
 	// We want a space before and after the position
 	position := " " + strconv.Itoa(selectionIndex) + "/" + strconv.Itoa(totalFiles) + " "
-	// Make position atleast 7 long so that we prevent too much ui shifting
-	if len(position) < 7 {
-		position = strings.Repeat(" ", 7-len(position)) + position
-	}
 
 	// Get the path of the selected item
 	// Start with a space
