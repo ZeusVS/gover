@@ -13,13 +13,18 @@ func (ts *terminalSession) queueBottomBar() {
 	// We want a space before and after the position
 	position := " " + strconv.Itoa(selectionIndex) + "/" + strconv.Itoa(totalFiles) + " "
 
+	// If there is not enough space to display the position, just remove it
+	if len(position) > ts.width {
+		position = ""
+	}
+
 	// Get the path of the selected item
 	// Start with a space
 	line := ts.cwd + "/" + ts.cwdFiles[ts.selectionPos].Name()
 	homeDir, err := os.UserHomeDir()
 
 	var cut bool
-	// Only cut prefix is a homeDir was found
+	// Only try to cut prefix if a homeDir was found
 	if err == nil {
 		line, cut = strings.CutPrefix(line, homeDir)
 		// Only add tilde if a prefix was cut
@@ -48,7 +53,7 @@ func (ts *terminalSession) queueBottomBar() {
 	}
 
 	spacesToAdd := ts.width - len(line) - len(position)
-	if spacesToAdd >= 0 {
+	if spacesToAdd > 0 {
 		line += strings.Repeat(" ", spacesToAdd)
 	} else {
 		// Just trim if the width of the terminal is this small
@@ -77,6 +82,8 @@ func (ts *terminalSession) queueBottomBar() {
 		return
 	}
 	filePerms := fileInfo.Mode().String()
+
+	filePerms = addPadding(filePerms, " ", ts.width)
 
 	drawInstr = drawInstruction{
 		x:    0,

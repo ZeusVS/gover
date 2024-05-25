@@ -105,6 +105,11 @@ func (ts *terminalSession) getDirLine(width int, i int, file os.FileInfo, dir st
 		dirAmt = " " + strconv.Itoa(len(dirPath)) + " "
 	}
 
+	// Do not display dirAmt if there is no space for it
+	if len(dirAmt) > width {
+		dirAmt = ""
+	}
+
 	line = addPadding(line, " ", width-len(dirAmt))
 	line += dirAmt
 
@@ -119,6 +124,12 @@ func (ts *terminalSession) getDirLine(width int, i int, file os.FileInfo, dir st
 func (ts *terminalSession) getExeLine(width int, i int, file os.FileInfo, selection bool) string {
 	line := " " + ExecutableIcon + " " + file.Name() + "*"
 	fileSize := getFileSize(file.Size())
+
+	// Do not display filesize if there is no space for it
+	if len(fileSize) > width {
+		fileSize = ""
+	}
+
 	line = addPadding(line, " ", width-len(fileSize))
 
 	line += fileSize
@@ -134,6 +145,12 @@ func (ts *terminalSession) getExeLine(width int, i int, file os.FileInfo, select
 func (ts *terminalSession) getFileLine(width int, i int, file os.FileInfo, selection bool) string {
 	line := " " + FileIcon + " " + file.Name()
 	fileSize := getFileSize(file.Size())
+
+	// Do not display filesize if there is no space for it
+	if len(fileSize) > width {
+		fileSize = ""
+	}
+
 	line = addPadding(line, " ", width-len(fileSize))
 	line += fileSize
 
