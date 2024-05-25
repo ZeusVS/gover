@@ -6,17 +6,9 @@ import (
 )
 
 func (ts *terminalSession) quit() {
-	close(ts.done)
 	// This does not close the for loop of the keylistener
 	// But it does stop ts.startRendering() which in turn stops main()
-}
-
-func (ts *terminalSession) up() {
-	ts.moveUpSelection(1)
-}
-
-func (ts *terminalSession) top() {
-	ts.moveUpSelection(len(ts.cwdFiles))
+	close(ts.done)
 }
 
 func (ts *terminalSession) moveUpSelection(n int) {
@@ -37,14 +29,6 @@ func (ts *terminalSession) moveUpSelection(n int) {
 	}
 
 	ts.refreshQueue()
-}
-
-func (ts *terminalSession) down() {
-	ts.moveDownSelection(1)
-}
-
-func (ts *terminalSession) bottom() {
-	ts.moveDownSelection(len(ts.cwdFiles))
 }
 
 func (ts *terminalSession) moveDownSelection(n int) {
@@ -131,10 +115,6 @@ func (ts *terminalSession) moveDownDir() {
 	ts.refreshQueue()
 }
 
-func (ts *terminalSession) scrollUpPreview() {
-	ts.moveUpPreview(ts.height / 2)
-}
-
 func (ts *terminalSession) moveUpPreview(n int) {
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
@@ -147,10 +127,6 @@ func (ts *terminalSession) moveUpPreview(n int) {
 	}
 
 	ts.refreshQueue()
-}
-
-func (ts *terminalSession) scrollDownPreview() {
-	ts.moveDownPreview(ts.height / 2)
 }
 
 func (ts *terminalSession) moveDownPreview(n int) {

@@ -41,4 +41,8 @@ const (
 	FileIcon       = "\uf016 "
 	LinkDirIcon    = "\uf482 "
 	LinkFileIcon   = "\uf481 "
+
+	// Special inputs
+	CtrlU = 0x15
+	CtrlD = 0x04
 )

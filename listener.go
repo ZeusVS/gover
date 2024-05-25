@@ -8,12 +8,9 @@ import (
 	"syscall"
 )
 
-const (
-	CtrlU = 0x15
-	CtrlD = 0x04
-)
-
 // Ideas:
+// ? show manual
+
 // s + ...
 // d/D sort dirs first/last (default)
 // a/A sort alphabetically
@@ -49,17 +46,33 @@ func (ts *terminalSession) startKeyListener() {
 	// Define the command that contains all other commands
 	startCommand := command{
 		subCommand: map[rune]command{
-			'q':   {callback: ts.quit},
-			'k':   {callback: ts.up},
-			'j':   {callback: ts.down},
-			'G':   {callback: ts.bottom},
-			'h':   {callback: ts.moveUpDir},
-			'l':   {callback: ts.moveDownDir},
-			CtrlU: {callback: ts.scrollUpPreview},
-			CtrlD: {callback: ts.scrollDownPreview},
+			// Quit gover
+			'q': {callback: ts.quit},
+
+			// Go up 1 on main panel
+			'k': {callback: func() { ts.moveUpSelection(1) }},
+			// Go up 10 on main panel
+			'K': {callback: func() { ts.moveUpSelection(10) }},
+			// Go down 1 on main panel
+			'j': {callback: func() { ts.moveDownSelection(1) }},
+			// Go down 10 on main panel
+			'J': {callback: func() { ts.moveDownSelection(1) }},
+			// Go to bottom on main panel
+			'G': {callback: func() { ts.moveDownSelection(len(ts.cwdFiles)) }},
+			// Go up a directiry level
+			'h': {callback: ts.moveUpDir},
+			// Go down a directory level
+			'l': {callback: ts.moveDownDir},
+			// Scroll up selection panel half a page
+			CtrlU: {callback: func() { ts.moveUpSelection(ts.height / 2) }},
+			// Scroll down selection panel half a page
+			CtrlD: {callback: func() { ts.moveDownSelection(ts.height / 2) }},
+
+			// Multiline command starting with 'g'
 			'g': {
 				subCommand: map[rune]command{
-					'g': {callback: ts.top},
+					// Go to top on main panel
+					'g': {callback: func() { ts.moveUpSelection(len(ts.cwdFiles)) }},
 				},
 			},
 		},
@@ -84,7 +97,8 @@ func (ts *terminalSession) startKeyListener() {
 
 		// If the command has a callback function we call it
 		if command.callback != nil {
-			command.callback()
+			callBackFunc := command.callback
+			callBackFunc()
 			continue
 		}
 
