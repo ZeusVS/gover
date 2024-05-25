@@ -9,43 +9,36 @@ import (
 )
 
 const (
-	exit = 'q'
-
-	up      = 'k'
-	down    = 'j'
-	dirUp   = 'h'
-	dirDown = 'l'
-
-	goTo     = 'g'
-	goBottom = 'G'
-
-	// Scroll preview up
 	CtrlU = 0x15
-	// Scroll preview down
 	CtrlD = 0x04
-	// TODO: add consts
-
-	// s + ...
-	// d/D sort dirs first/last (default)
-	// a/A sort alphabetically
-	// n/N sort files by last open? date
-	// s/S sort files by size
-	// ???
-
-	// S + ...
-	// h show/hide hidden files
-
-	// y copy
-	// d cut
-	// p paste
-	// r rename
-	// i new ???
-
-	// / search
-	// ? reverse search
-	// n search next
-	// N search previous
 )
+
+// Ideas:
+// s + ...
+// d/D sort dirs first/last (default)
+// a/A sort alphabetically
+// n/N sort files by last open? date
+// s/S sort files by size
+// ???
+
+// S + ...
+// h show/hide hidden files
+
+// y copy
+// d cut
+// p paste
+// r rename
+// i new ???
+
+// / search
+// ? reverse search
+// n search next
+// N search previous
+
+type command struct {
+	callback   func()
+	subCommand map[rune]command
+}
 
 func (ts *terminalSession) startListening() {
 	go ts.startKeyListener()
@@ -53,6 +46,28 @@ func (ts *terminalSession) startListening() {
 }
 
 func (ts *terminalSession) startKeyListener() {
+	// Define the command that contains all other commands
+	startCommand := command{
+		subCommand: map[rune]command{
+			'q':   {callback: ts.quit},
+			'k':   {callback: ts.up},
+			'j':   {callback: ts.down},
+			'G':   {callback: ts.bottom},
+			'h':   {callback: ts.moveUpDir},
+			'l':   {callback: ts.moveDownDir},
+			CtrlU: {callback: ts.scrollUpPreview},
+			CtrlD: {callback: ts.scrollDownPreview},
+			'g': {
+				subCommand: map[rune]command{
+					'g': {callback: ts.top},
+				},
+			},
+		},
+	}
+
+	// Set the current command to the start command
+	ts.command = startCommand
+
 	r := bufio.NewReader(os.Stdin)
 	for {
 		ru, _, err := r.ReadRune()
@@ -60,44 +75,21 @@ func (ts *terminalSession) startKeyListener() {
 			fmt.Fprintf(os.Stderr, "Error: reading key from Stdin: %s\r\n", err)
 		}
 
-		switch {
-		case ru == exit:
-			close(ts.done)
-			return
-
-		// Main panel move selection up
-		case ru == up:
-			ts.moveSelectionUp(1)
-		// Main panel move selection down
-		case ru == down:
-			ts.moveSelectionDown(1)
-		// Main panel go dir level higher
-		case ru == dirUp:
-			ts.moveUpDir()
-		// Main panel go dir level lower
-		case ru == dirDown:
-			ts.moveDownDir()
-		case ru == goTo:
-			// Main panel go to top
-			if ts.command == "g" {
-				ts.moveSelectionUp(len(ts.cwdFiles))
-			} else if ts.command == "" {
-				ts.command = "g"
-			} else {
-				ts.command = ""
-			}
-		// Main panel scroll to bottom
-		case ru == goBottom:
-			ts.moveSelectionDown(len(ts.cwdFiles))
-		case ru == CtrlD:
-			// Scroll half a page
-			n := ts.height / 2
-			ts.movePreviewDown(n)
-		case ru == CtrlU:
-			// Scroll half a page
-			n := ts.height / 2
-			ts.movePreviewUp(n)
+		// If the input rune results in a nonexistant command we reset the command
+		command, ok := ts.command.subCommand[ru]
+		if !ok {
+			ts.command = startCommand
+			continue
 		}
+
+		// If the command has a callback function we call it
+		if command.callback != nil {
+			command.callback()
+			continue
+		}
+
+		// Otherwise we will go to the remaining subcommands
+		ts.command = command
 	}
 }
 
@@ -113,5 +105,4 @@ func (ts *terminalSession) startResizeListener() {
 			ts.resize()
 		}
 	}
-
 }

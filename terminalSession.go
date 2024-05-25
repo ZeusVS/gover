@@ -26,7 +26,7 @@ type terminalSession struct {
 	originalState *term.State
 	fdIn          int
 
-	command string
+	command command
 	debug   string
 
 	drawQueue    []drawInstruction
@@ -83,8 +83,7 @@ func StartTerminalSession() (terminalSession, error) {
 		originalState: originalState,
 		fdIn:          fdIn,
 
-		command: "",
-		debug:   "",
+		debug: "",
 
 		drawQueue:    []drawInstruction{},
 		cwd:          cwd,

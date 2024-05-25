@@ -5,11 +5,24 @@ import (
 	"path/filepath"
 )
 
-func (ts *terminalSession) moveSelectionUp(n int) {
+func (ts *terminalSession) quit() {
+	close(ts.done)
+	// This does not close the for loop of the keylistener
+	// But it does stop ts.startRendering() which in turn stops main()
+}
+
+func (ts *terminalSession) up() {
+	ts.moveUpSelection(1)
+}
+
+func (ts *terminalSession) top() {
+	ts.moveUpSelection(len(ts.cwdFiles))
+}
+
+func (ts *terminalSession) moveUpSelection(n int) {
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
-	ts.command = ""
 	ts.selectionPos -= n
 	ts.previewOffset = 0
 
@@ -26,11 +39,18 @@ func (ts *terminalSession) moveSelectionUp(n int) {
 	ts.refreshQueue()
 }
 
-func (ts *terminalSession) moveSelectionDown(n int) {
+func (ts *terminalSession) down() {
+	ts.moveDownSelection(1)
+}
+
+func (ts *terminalSession) bottom() {
+	ts.moveDownSelection(len(ts.cwdFiles))
+}
+
+func (ts *terminalSession) moveDownSelection(n int) {
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
-	ts.command = ""
 	ts.selectionPos += n
 	ts.previewOffset = 0
 
@@ -51,7 +71,6 @@ func (ts *terminalSession) moveUpDir() {
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
-	ts.command = ""
 	ts.mainOffset = 0
 	ts.previewOffset = 0
 
@@ -82,7 +101,6 @@ func (ts *terminalSession) moveDownDir() {
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
-	ts.command = ""
 	ts.mainOffset = 0
 	ts.previewOffset = 0
 
@@ -113,11 +131,14 @@ func (ts *terminalSession) moveDownDir() {
 	ts.refreshQueue()
 }
 
-func (ts *terminalSession) movePreviewUp(n int) {
+func (ts *terminalSession) scrollUpPreview() {
+	ts.moveUpPreview(ts.height / 2)
+}
+
+func (ts *terminalSession) moveUpPreview(n int) {
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
-	ts.command = ""
 	ts.previewOffset -= n
 
 	// Go back if we are before the beginning of the files
@@ -128,11 +149,14 @@ func (ts *terminalSession) movePreviewUp(n int) {
 	ts.refreshQueue()
 }
 
-func (ts *terminalSession) movePreviewDown(n int) {
+func (ts *terminalSession) scrollDownPreview() {
+	ts.moveDownPreview(ts.height / 2)
+}
+
+func (ts *terminalSession) moveDownPreview(n int) {
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
-	ts.command = ""
 	ts.previewOffset += n
 
 	// Go back if we are before the beginning of the files

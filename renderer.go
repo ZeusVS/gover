@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"io"
 )
 
 func (ts *terminalSession) startRendering() {
@@ -22,8 +21,10 @@ func (ts *terminalSession) render() {
 	defer ts.mu.Unlock()
 
 	for _, drawInstr := range ts.drawQueue {
-		// The line with index 0 is drawn on position 1 in both x and y direction
-		moveCursorTo(ts.out, drawInstr.x+1, drawInstr.y+1)
+		// Moves the cursor to pos x+1:y+1
+		// Terminal is 1 based and our instr's are 0 based
+		fmt.Fprintf(ts.out, CSI+MoseCursorToSeq, drawInstr.y+1, drawInstr.x+1)
+		// Draw the line
 		fmt.Fprint(ts.out, drawInstr.line)
 	}
 
@@ -41,8 +42,4 @@ func (ts *terminalSession) refreshQueue() {
 
 func (ts *terminalSession) emptyDrawQueue() {
 	ts.drawQueue = ts.drawQueue[:0]
-}
-
-func moveCursorTo(out io.Writer, x, y int) {
-	fmt.Fprintf(out, CSI+MoseCursorToSeq, y, x)
 }
