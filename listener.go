@@ -18,11 +18,12 @@ const (
 
 	goTo     = 'g'
 	goBottom = 'G'
-	// TODO: add consts
 
-	// scroll preview up and down:
-	// up - c-u
-	// down - c-d
+	// Scroll preview up
+	CtrlU = 0x15
+	// Scroll preview down
+	CtrlD = 0x04
+	// TODO: add consts
 
 	// s + ...
 	// d/D sort dirs first/last (default)
@@ -88,6 +89,14 @@ func (ts *terminalSession) startKeyListener() {
 		// Main panel scroll to bottom
 		case ru == goBottom:
 			ts.moveSelectionDown(len(ts.cwdFiles))
+		case ru == CtrlD:
+			// Scroll half a page
+			n := ts.height / 2
+			ts.movePreviewDown(n)
+		case ru == CtrlU:
+			// Scroll half a page
+			n := ts.height / 2
+			ts.movePreviewUp(n)
 		}
 	}
 }

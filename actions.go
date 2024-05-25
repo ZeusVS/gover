@@ -11,6 +11,7 @@ func (ts *terminalSession) moveSelectionUp(n int) {
 
 	ts.command = ""
 	ts.selectionPos -= n
+	ts.previewOffset = 0
 
 	// Go back if we are before the beginning of the files
 	if ts.selectionPos < 0 {
@@ -31,6 +32,7 @@ func (ts *terminalSession) moveSelectionDown(n int) {
 
 	ts.command = ""
 	ts.selectionPos += n
+	ts.previewOffset = 0
 
 	// Go back if we are beyond the end of the files
 	if ts.selectionPos > len(ts.cwdFiles)-1 {
@@ -51,6 +53,7 @@ func (ts *terminalSession) moveUpDir() {
 
 	ts.command = ""
 	ts.mainOffset = 0
+	ts.previewOffset = 0
 
 	_, fileName := filepath.Split(ts.cwd)
 	ts.cwd = filepath.Dir(ts.cwd)
@@ -81,6 +84,7 @@ func (ts *terminalSession) moveDownDir() {
 
 	ts.command = ""
 	ts.mainOffset = 0
+	ts.previewOffset = 0
 
 	// If the selection isn't a directory do nothing
 	// Should I add symlink directories as well?
@@ -105,6 +109,37 @@ func (ts *terminalSession) moveDownDir() {
 	ts.cwd = newDir
 	ts.cwdFiles = newFiles
 	ts.selectionPos = 0
+
+	ts.refreshQueue()
+}
+
+func (ts *terminalSession) movePreviewUp(n int) {
+	ts.mu.Lock()
+	defer ts.mu.Unlock()
+
+	ts.command = ""
+	ts.previewOffset -= n
+
+	// Go back if we are before the beginning of the files
+	if ts.previewOffset < 0 {
+		ts.previewOffset = 0
+	}
+
+	ts.refreshQueue()
+}
+
+func (ts *terminalSession) movePreviewDown(n int) {
+	ts.mu.Lock()
+	defer ts.mu.Unlock()
+
+	ts.command = ""
+	ts.previewOffset += n
+
+	// Go back if we are before the beginning of the files
+	// TODO: it seems there is always an extra empty line at the end, check it out
+	if ts.previewOffset > ts.previewLen-(ts.height-BottomRows) {
+		ts.previewOffset = ts.previewLen - (ts.height - BottomRows)
+	}
 
 	ts.refreshQueue()
 }
