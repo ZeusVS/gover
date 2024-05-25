@@ -38,7 +38,7 @@ func (ts *terminalSession) queuePreview() {
 		ts.queueFiles(
 			previewFiles,
 			previewDir,
-			ts.previewOffset,
+			ts.previewOffsetV,
 			ts.width/2,
 			width,
 			false) // We do not want to get a selection in the preview panel
@@ -53,7 +53,8 @@ func (ts *terminalSession) queuePreview() {
 	if utf8.ValidString(fileContent) {
 		ts.queueFileContents(
 			fileContent,
-			ts.previewOffset,
+			ts.previewOffsetV,
+			ts.previewOffsetH,
 			ts.width/2,
 			width)
 		return
@@ -73,21 +74,33 @@ func (ts *terminalSession) queuePreview() {
 	}
 }
 
-func (ts *terminalSession) queueFileContents(contents string, offset int, col int, width int) {
+func (ts *terminalSession) queueFileContents(
+	contents string,
+	offsetV int,
+	offsetH int,
+	col int,
+	width int) {
 	lines := strings.Split(contents, "\n")
 	ts.previewLen = len(lines)
 
 	for i, line := range lines {
-		if i < offset || i > ts.height+offset-1-BottomRows {
+		if i < offsetV || i > ts.height+offsetV-1-BottomRows {
 			continue
 		}
 		// Replace all tabs with four spaces
 		line = strings.ReplaceAll(line, "\t", "    ")
+		// If line is longer than the offset
+		if len(line) > offsetH {
+			line = line[offsetH:]
+			// Otherwise make line empty
+		} else {
+			line = ""
+		}
 		line = addPadding(line, " ", width)
 
 		drawInstr := drawInstruction{
 			x:    col,
-			y:    i - offset,
+			y:    i - offsetV,
 			line: line,
 		}
 

@@ -43,6 +43,8 @@ const (
 	LinkFileIcon   = "\uf481 "
 
 	// Special inputs
-	CtrlU = 0x15
 	CtrlD = 0x04
+	CtrlF = 0x06
+	CtrlK = 0x0B
+	CtrlU = 0x15
 )

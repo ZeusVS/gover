@@ -56,17 +56,21 @@ func (ts *terminalSession) startKeyListener() {
 			// Go down 1 on main panel
 			'j': {callback: func() { ts.moveDownSelection(1) }},
 			// Go down 10 on main panel
-			'J': {callback: func() { ts.moveDownSelection(1) }},
+			'J': {callback: func() { ts.moveDownSelection(10) }},
 			// Go to bottom on main panel
 			'G': {callback: func() { ts.moveDownSelection(len(ts.cwdFiles)) }},
 			// Go up a directiry level
 			'h': {callback: ts.moveUpDir},
 			// Go down a directory level
 			'l': {callback: ts.moveDownDir},
-			// Scroll up selection panel half a page
-			CtrlU: {callback: func() { ts.moveUpSelection(ts.height / 2) }},
-			// Scroll down selection panel half a page
-			CtrlD: {callback: func() { ts.moveDownSelection(ts.height / 2) }},
+			// Scroll up preview panel half a page
+			CtrlU: {callback: func() { ts.moveUpPreview(ts.height / 2) }},
+			// Scroll down preview panel half a page
+			CtrlD: {callback: func() { ts.moveDownPreview(ts.height / 2) }},
+			// Scroll left preview panel half a page
+			CtrlF: {callback: func() { ts.moveLeftPreview(ts.width / 4) }},
+			// Scroll right preview panel half a page
+			CtrlK: {callback: func() { ts.moveRightPreview(ts.width / 4) }},
 
 			// Multiline command starting with 'g'
 			'g': {

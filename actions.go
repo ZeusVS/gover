@@ -16,14 +16,15 @@ func (ts *terminalSession) moveUpSelection(n int) {
 	defer ts.mu.Unlock()
 
 	ts.selectionPos -= n
-	ts.previewOffset = 0
+	ts.previewOffsetV = 0
+	ts.previewOffsetH = 0
 
-	// Go back if we are before the beginning of the files
+	// Reset if we are before the beginning of the files
 	if ts.selectionPos < 0 {
 		ts.selectionPos = 0
 	}
 
-	// If the selection is outside of the range, set the offset
+	// If the selection is outside of the range, adjust the offset
 	if ts.selectionPos < ts.mainOffset {
 		ts.mainOffset = ts.selectionPos
 	}
@@ -36,14 +37,15 @@ func (ts *terminalSession) moveDownSelection(n int) {
 	defer ts.mu.Unlock()
 
 	ts.selectionPos += n
-	ts.previewOffset = 0
+	ts.previewOffsetV = 0
+	ts.previewOffsetH = 0
 
-	// Go back if we are beyond the end of the files
+	// Reset if we are beyond the end of the files
 	if ts.selectionPos > len(ts.cwdFiles)-1 {
 		ts.selectionPos = len(ts.cwdFiles) - 1
 	}
 
-	// If the selection is outside of the range, set the offset
+	// If the selection is outside of the range, adjust the offset
 	if ts.selectionPos > ts.height+ts.mainOffset-1-BottomRows {
 		ts.mainOffset = ts.selectionPos - ts.height + 1 + BottomRows
 	}
@@ -56,7 +58,8 @@ func (ts *terminalSession) moveUpDir() {
 	defer ts.mu.Unlock()
 
 	ts.mainOffset = 0
-	ts.previewOffset = 0
+	ts.previewOffsetV = 0
+	ts.previewOffsetH = 0
 
 	_, fileName := filepath.Split(ts.cwd)
 	ts.cwd = filepath.Dir(ts.cwd)
@@ -86,7 +89,8 @@ func (ts *terminalSession) moveDownDir() {
 	defer ts.mu.Unlock()
 
 	ts.mainOffset = 0
-	ts.previewOffset = 0
+	ts.previewOffsetV = 0
+	ts.previewOffsetH = 0
 
 	// If the selection isn't a directory do nothing
 	// Should I add symlink directories as well?
@@ -119,11 +123,11 @@ func (ts *terminalSession) moveUpPreview(n int) {
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
-	ts.previewOffset -= n
+	ts.previewOffsetV -= n
 
-	// Go back if we are before the beginning of the files
-	if ts.previewOffset < 0 {
-		ts.previewOffset = 0
+	// Reset if we are before the beginning of the files
+	if ts.previewOffsetV < 0 {
+		ts.previewOffsetV = 0
 	}
 
 	ts.refreshQueue()
@@ -133,13 +137,39 @@ func (ts *terminalSession) moveDownPreview(n int) {
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
-	ts.previewOffset += n
+	ts.previewOffsetV += n
 
-	// Go back if we are before the beginning of the files
+	// Reset if we are beyond the end of the files
 	// TODO: it seems there is always an extra empty line at the end, check it out
-	if ts.previewOffset > ts.previewLen-(ts.height-BottomRows) {
-		ts.previewOffset = ts.previewLen - (ts.height - BottomRows)
+	if ts.previewOffsetV > ts.previewLen-(ts.height-BottomRows) {
+		ts.previewOffsetV = ts.previewLen - (ts.height - BottomRows)
 	}
+
+	ts.refreshQueue()
+}
+
+func (ts *terminalSession) moveLeftPreview(n int) {
+	ts.mu.Lock()
+	defer ts.mu.Unlock()
+
+	ts.previewOffsetH -= n
+
+	// Reset if we are before the first char
+	if ts.previewOffsetH < 0 {
+		ts.previewOffsetH = 0
+	}
+
+	ts.refreshQueue()
+}
+
+func (ts *terminalSession) moveRightPreview(n int) {
+	ts.mu.Lock()
+	defer ts.mu.Unlock()
+
+	ts.previewOffsetH += n
+
+	// TODO: Reset if we are after the last char of the file
+	// This might be a bit convoluted with the way the code is built atm
 
 	ts.refreshQueue()
 }

@@ -6,7 +6,7 @@ func (ts *terminalSession) queueScrollbars() {
 	// First screen scrollbar
 	ts.queueScrollbar(ts.width/2-1, ts.height-BottomRows, ts.mainOffset, len(ts.cwdFiles))
 	// Second screen scrollbar
-	ts.queueScrollbar(ts.width-1, ts.height-BottomRows, ts.previewOffset, ts.previewLen)
+	ts.queueScrollbar(ts.width-1, ts.height-BottomRows, ts.previewOffsetV, ts.previewLen)
 }
 
 func (ts *terminalSession) queueScrollbar(x int, height int, offset int, contentHeight int) {
