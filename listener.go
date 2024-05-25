@@ -31,11 +31,19 @@ const (
 	// s/S sort files by size
 	// ???
 
-	// copy
-	// move
-	// paste
-	// remove
-	// ???
+	// S + ...
+	// h show/hide hidden files
+
+	// y copy
+	// d cut
+	// p paste
+	// r rename
+	// i new ???
+
+	// / search
+	// ? reverse search
+	// n search next
+	// N search previous
 )
 
 func (ts *terminalSession) startListening() {
