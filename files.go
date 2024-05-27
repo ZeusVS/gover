@@ -45,7 +45,10 @@ func (ts *terminalSession) queueFiles(
 		var link string
 
 		// a directory or a file
-		if file.Mode()&os.ModeSymlink != 0 {
+		if file.IsDir() {
+			line = ts.getDirLine(width, i, file, dir, selection)
+
+		} else if file.Mode()&os.ModeSymlink != 0 {
 			link, err = filepath.EvalSymlinks(filepath.Join(dir, file.Name()))
 			if err != nil {
 				link = "Error: Link not found"
@@ -55,14 +58,10 @@ func (ts *terminalSession) queueFiles(
 			linkInfo, err := os.Stat(link)
 			if err != nil {
 				symbol = "?"
-			}
-			if !linkInfo.IsDir() {
+			} else if !linkInfo.IsDir() {
 				symbol = LinkFileIcon
 			}
 			line = ts.getLinkLine(width, i, file, link, symbol, selection)
-
-		} else if file.IsDir() {
-			line = ts.getDirLine(width, i, file, dir, selection)
 
 		} else if file.Mode()&0111 != 0 {
 			line = ts.getExeLine(width, i, file, selection)

@@ -4,6 +4,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"unicode/utf8"
 )
 
 func (ts *terminalSession) quit() {
@@ -200,11 +201,8 @@ func (ts *terminalSession) open() {
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
-	// If current selection isnt a directory just do nothing for now
-	// TODO!
-	if !ts.cwdFiles[ts.selectionPos].IsDir() {
-		return
-	}
+	selectionName := ts.cwdFiles[ts.selectionPos].Name()
+	filePath := filepath.Join(ts.cwd, selectionName)
 
 	// Get the default terminal
 	terminal := os.Getenv("TERM")
@@ -212,7 +210,32 @@ func (ts *terminalSession) open() {
 		return
 	}
 
-	os.Chdir(ts.cwdFiles[ts.selectionPos].Name())
-	cmd := exec.Command(terminal)
-	cmd.Run()
+	// If selection is a directory open a new terminal window in that directory
+	if ts.cwdFiles[ts.selectionPos].IsDir() {
+		os.Chdir(filePath)
+		cmd := exec.Command(terminal)
+		cmd.Run()
+		return
+	}
+
+	// If selection is a valid utf8 encoded file open in default editor
+	b, _ := os.ReadFile(filePath)
+	fileContent := string(b)
+	if utf8.ValidString(fileContent) {
+		// Get the default editor
+		editor := os.Getenv("EDITOR")
+		if editor == "" {
+			return
+		}
+
+		cmd := exec.Command(terminal, "-e", editor, filePath)
+		cmd.Run()
+		return
+	}
+
+	// Executables and links remain
+
+	// Code for executables:
+	// cmd := exec.Command(terminal, "-e", path)
+	// cmd.Run()
 }

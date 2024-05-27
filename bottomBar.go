@@ -19,8 +19,12 @@ func (ts *terminalSession) queueBottomBar() {
 	}
 
 	// Get the path of the selected item
-	// Start with a space
-	line := ts.cwd + "/" + ts.cwdFiles[ts.selectionPos].Name()
+	// Prevent "//" at root
+	cwd := ts.cwd
+	if cwd == "/" {
+		cwd = ""
+	}
+	line := cwd + "/" + ts.cwdFiles[ts.selectionPos].Name()
 	homeDir, err := os.UserHomeDir()
 
 	var cut bool

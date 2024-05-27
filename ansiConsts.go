@@ -47,7 +47,7 @@ const (
 var (
 	inputMap = map[string]rune{
 		// Special input
-		"enter": 0x0a,
+		"enter": 0x0d,
 		// Ctrl + letter input
 		"ctrl-a": 0x01,
 		"ctrl-b": 0x02,

@@ -25,9 +25,10 @@ import (
 // i new ???
 
 // / search
-// ? reverse search
 // n search next
 // N search previous
+
+// ? show all commands
 
 type command struct {
 	callback   func()
@@ -42,7 +43,7 @@ func (ts *terminalSession) startKeyListener() {
 			// Quit gover
 			'q': {callback: ts.quit},
 			// Open current selection
-			'o': {callback: ts.open},
+			inputMap["enter"]: {callback: ts.open},
 
 			// Motions
 			// Move to home directory

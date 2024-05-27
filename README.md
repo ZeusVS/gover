@@ -20,8 +20,11 @@ go install github.com/ZeusVS/gover@latest
 
 ### Controls:
 ```
-- 'q':  Quit the program
-- 'o':  Open the selected directory in a new terminal window
+- 'q': Quit the program
+
+- 'enter': Open the selected in a new window:
+               Directory: default terminal
+               Text file: default editor
 
 - '~':  Go to your home directory
 - 'h':  Go to parent directory
@@ -38,3 +41,7 @@ go install github.com/ZeusVS/gover@latest
 - '<c-f>':  Scroll the preview panel left
 - '<c-k>':  Scroll the preview panel right
 ```
+
+### Important information:
+To open files/directories the environment variables $TERM and $EDITOR are used,
+to make sure everything works as intended please make sure these are set.
