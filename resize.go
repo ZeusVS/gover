@@ -1,6 +1,26 @@
 package main
 
-import "golang.org/x/term"
+import (
+	"os"
+	"os/signal"
+	"syscall"
+
+	"golang.org/x/term"
+)
+
+func (ts *terminalSession) startResizeListener() {
+	sigc := make(chan os.Signal, 1)
+	signal.Notify(sigc, syscall.SIGWINCH)
+
+	for {
+		select {
+		case <-ts.done:
+			return
+		case <-sigc:
+			ts.resize()
+		}
+	}
+}
 
 func (ts *terminalSession) resize() {
 	ts.mu.Lock()

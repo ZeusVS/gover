@@ -2,12 +2,11 @@ package main
 
 import (
 	"os"
+	"os/exec"
 	"path/filepath"
 )
 
 func (ts *terminalSession) quit() {
-	// This does not close the for loop of the keylistener
-	// But it does stop ts.startRendering() which in turn stops main()
 	close(ts.done)
 }
 
@@ -172,4 +171,48 @@ func (ts *terminalSession) moveRightPreview(n int) {
 	// This might be a bit convoluted with the way the code is built atm
 
 	ts.refreshQueue()
+}
+
+func (ts *terminalSession) goHome() {
+	ts.mu.Lock()
+	defer ts.mu.Unlock()
+
+	home, err := os.UserHomeDir()
+	// If homedir is not found, just return
+	if err != nil {
+		return
+	}
+
+	ts.selectionPos = 0
+	ts.mainOffset = 0
+	ts.previewOffsetV = 0
+	ts.previewOffsetH = 0
+	ts.cwd = home
+	// No error handling, needs to change?
+	ts.cwdFiles, _ = os.ReadDir(home)
+
+	ts.refreshQueue()
+}
+
+func (ts *terminalSession) open() {
+	// This will open up a terminal session in a new terminal window
+	// This is not ideal, but it's impossible to change the cwd of a parent process
+	ts.mu.Lock()
+	defer ts.mu.Unlock()
+
+	// If current selection isnt a directory just do nothing for now
+	// TODO!
+	if !ts.cwdFiles[ts.selectionPos].IsDir() {
+		return
+	}
+
+	// Get the default terminal
+	terminal := os.Getenv("TERM")
+	if terminal == "" {
+		return
+	}
+
+	os.Chdir(ts.cwdFiles[ts.selectionPos].Name())
+	cmd := exec.Command(terminal)
+	cmd.Run()
 }

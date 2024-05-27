@@ -2,10 +2,7 @@ package main
 
 import (
 	"bufio"
-	"fmt"
 	"os"
-	"os/signal"
-	"syscall"
 )
 
 // Ideas:
@@ -37,18 +34,19 @@ type command struct {
 	subCommand map[rune]command
 }
 
-func (ts *terminalSession) startListening() {
-	go ts.startKeyListener()
-	go ts.startResizeListener()
-}
-
 func (ts *terminalSession) startKeyListener() {
-	// Define the command that contains all other commands
+	// Define the command tree
 	startCommand := command{
 		subCommand: map[rune]command{
+			// Actions
 			// Quit gover
 			'q': {callback: ts.quit},
+			// Open current selection
+			'o': {callback: ts.open},
 
+			// Motions
+			// Move to home directory
+			'~': {callback: ts.goHome},
 			// Go up 1 on main panel
 			'k': {callback: func() { ts.moveUpSelection(1) }},
 			// Go up 10 on main panel
@@ -64,13 +62,13 @@ func (ts *terminalSession) startKeyListener() {
 			// Go down a directory level
 			'l': {callback: ts.moveDownDir},
 			// Scroll up preview panel half a page
-			CtrlU: {callback: func() { ts.moveUpPreview(ts.height / 2) }},
+			inputMap["ctrl-u"]: {callback: func() { ts.moveUpPreview(ts.height / 2) }},
 			// Scroll down preview panel half a page
-			CtrlD: {callback: func() { ts.moveDownPreview(ts.height / 2) }},
+			inputMap["ctrl-d"]: {callback: func() { ts.moveDownPreview(ts.height / 2) }},
 			// Scroll left preview panel half a page
-			CtrlF: {callback: func() { ts.moveLeftPreview(ts.width / 4) }},
+			inputMap["ctrl-f"]: {callback: func() { ts.moveLeftPreview(ts.width / 4) }},
 			// Scroll right preview panel half a page
-			CtrlK: {callback: func() { ts.moveRightPreview(ts.width / 4) }},
+			inputMap["ctrl-k"]: {callback: func() { ts.moveRightPreview(ts.width / 4) }},
 
 			// Multiline command starting with 'g'
 			'g': {
@@ -85,42 +83,55 @@ func (ts *terminalSession) startKeyListener() {
 	// Set the current command to the start command
 	ts.command = startCommand
 
+	// Make a channel that recieves all runes read from Stdin
 	r := bufio.NewReader(os.Stdin)
-	for {
-		ru, _, err := r.ReadRune()
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "Error: reading key from Stdin: %s\r\n", err)
-		}
+	readCh := make(chan (rune))
+	readCh = runeReader(r)
 
-		// If the input rune results in a nonexistant command we reset the command
-		command, ok := ts.command.subCommand[ru]
-		if !ok {
-			ts.command = startCommand
-			continue
-		}
-
-		// If the command has a callback function we call it
-		if command.callback != nil {
-			callBackFunc := command.callback
-			callBackFunc()
-			continue
-		}
-
-		// Otherwise we will go to the remaining subcommands
-		ts.command = command
-	}
-}
-
-func (ts *terminalSession) startResizeListener() {
-	sigc := make(chan os.Signal, 1)
-	signal.Notify(sigc, syscall.SIGWINCH)
-
+	// Loop where we check if ts.done is closed or a rune is read
 	for {
 		select {
 		case <-ts.done:
 			return
-		case <-sigc:
-			ts.resize()
+		case ru := <-readCh:
+			ts.getCommand(ru, startCommand)
 		}
 	}
+}
+
+func (ts *terminalSession) getCommand(ru rune, startCommand command) {
+	// If the input rune results in a nonexistant command we reset the command
+	command, ok := ts.command.subCommand[ru]
+	if !ok {
+		ts.command = startCommand
+		return
+	}
+
+	// If the command has a callback function we call it
+	if command.callback != nil {
+		callBackFunc := command.callback
+		callBackFunc()
+		return
+	}
+
+	// Otherwise we will go to the remaining subcommands
+	ts.command = command
+}
+
+// Function that makes a runereader goroutine
+func runeReader(r *bufio.Reader) chan rune {
+	ch := make(chan (rune))
+	go func() {
+		for {
+			for {
+				ru, _, err := r.ReadRune()
+				if err != nil {
+					continue
+				}
+				ch <- ru
+			}
+		}
+	}()
+
+	return ch
 }
