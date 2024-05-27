@@ -239,3 +239,38 @@ func (ts *terminalSession) open() {
 	// cmd := exec.Command(terminal, "-e", path)
 	// cmd.Run()
 }
+
+func (ts *terminalSession) rename() {
+	// TODO: Move the selectionPos to the correct location after rename
+	ts.inputMode = true
+	runeSlice := []rune{}
+	for {
+		ts.queueInputLine("Rename: " + string(runeSlice))
+		ru := <-ts.inCh
+		if ru == inputMap["enter"] {
+			break
+		}
+		if ru == inputMap["backspace"] {
+			runeSlice = runeSlice[:len(runeSlice)-1]
+		} else {
+			runeSlice = append(runeSlice, ru)
+		}
+	}
+	ts.inputMode = false
+
+	name := string(runeSlice)
+
+	selectionName := ts.cwdFiles[ts.selectionPos].Name()
+	oldPath := filepath.Join(ts.cwd, selectionName)
+
+	newPath := filepath.Join(ts.cwd, name)
+	os.Rename(oldPath, newPath)
+
+	// Refresh files
+	cwdFiles, err := os.ReadDir(ts.cwd)
+	if err != nil {
+		return
+	}
+	ts.cwdFiles = cwdFiles
+	ts.refreshQueue()
+}

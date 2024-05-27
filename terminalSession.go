@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"bytes"
 	"fmt"
 	"io"
@@ -18,15 +19,19 @@ const (
 
 type terminalSession struct {
 	mu     *sync.Mutex
+	in     *bufio.Reader
 	out    io.Writer
 	buffer *bytes.Buffer
 	ticker *time.Ticker
 	done   chan struct{}
+	inCh   chan rune
 
 	originalState *term.State
 	fdIn          int
 
-	command command
+	startCmd  command
+	curCmd    command
+	inputMode bool
 
 	drawQueue    []drawInstruction
 	cwd          string
@@ -50,10 +55,12 @@ type drawInstruction struct {
 // Initialise the terminal screen
 func StartTerminalSession() (terminalSession, error) {
 	mu := &sync.Mutex{}
+	in := bufio.NewReader(os.Stdin)
 	out := os.Stdout
 	buffer := new(bytes.Buffer)
 	ticker := time.NewTicker(time.Millisecond * 1000 / framerate)
 	done := make(chan struct{})
+	inCh := make(chan rune)
 
 	fdIn := int(os.Stdin.Fd())
 	// Put the terminal in raw mode and remember the original state
@@ -75,13 +82,17 @@ func StartTerminalSession() (terminalSession, error) {
 
 	ts := terminalSession{
 		mu:     mu,
+		in:     in,
 		out:    out,
 		buffer: buffer,
 		ticker: ticker,
 		done:   done,
+		inCh:   inCh,
 
 		originalState: originalState,
 		fdIn:          fdIn,
+
+		inputMode: false,
 
 		drawQueue:    []drawInstruction{},
 		cwd:          cwd,

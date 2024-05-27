@@ -1,11 +1,11 @@
 # Gover
 ## Terminal file manager for unix systems in go
-The current state of the program is very alpha.
+The current state of the program is very alpha.\
 Please note, this file manager is only for unix based systems!
 
 ### Etymology:
-Word blend of
-    - go: The programming language this file manager is written in
+Word blend of:\
+    - go: The programming language this file manager is written in\
     - rover: The file manager this one is loosely based upon
 
 ### How to start:
@@ -43,5 +43,5 @@ go install github.com/ZeusVS/gover@latest
 ```
 
 ### Important information:
-To open files/directories the environment variables $TERM and $EDITOR are used,
-to make sure everything works as intended please make sure these are set.
+To open files and directories the environment variables $TERM and $EDITOR are used,\
+to make this functionality work as intended make sure these are set.

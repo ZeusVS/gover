@@ -24,76 +24,87 @@ func (ts *terminalSession) queueBottomBar() {
 	if cwd == "/" {
 		cwd = ""
 	}
-	line := cwd + "/" + ts.cwdFiles[ts.selectionPos].Name()
+	lineTop := cwd + "/" + ts.cwdFiles[ts.selectionPos].Name()
 	homeDir, err := os.UserHomeDir()
 
 	var cut bool
 	// Only try to cut prefix if a homeDir was found
 	if err == nil {
-		line, cut = strings.CutPrefix(line, homeDir)
+		lineTop, cut = strings.CutPrefix(lineTop, homeDir)
 		// Only add tilde if a prefix was cut
 		if cut == true {
-			line = "~" + line
+			lineTop = "~" + lineTop
 		}
 	}
 	// Add a single space padding before and after the title
-	line = " " + line + " "
+	lineTop = " " + lineTop + " "
 
 	// Make the length short enough
-	for len(line)+len(position) > ts.width {
-		line, _ = strings.CutPrefix(line, " </")
-		splitLine := strings.SplitN(line, "/", 2)
+	for len(lineTop)+len(position) > ts.width {
+		lineTop, _ = strings.CutPrefix(lineTop, " </")
+		splitLine := strings.SplitN(lineTop, "/", 2)
 		if len(splitLine) > 1 {
-			line = " </" + strings.SplitN(line, "/", 2)[1]
+			lineTop = " </" + strings.SplitN(lineTop, "/", 2)[1]
 		} else {
 			// Now we need to remove letter per letter
-			line = " </" + line[1:]
+			lineTop = " </" + lineTop[1:]
 
 			// If the line is " </ " we need to break out of this loop
-			if len(line) == 4 {
+			if len(lineTop) == 4 {
 				break
 			}
 		}
 	}
 
-	spacesToAdd := ts.width - len(line) - len(position)
+	spacesToAdd := ts.width - len(lineTop) - len(position)
 	if spacesToAdd > 0 {
-		line += strings.Repeat(" ", spacesToAdd)
+		lineTop += strings.Repeat(" ", spacesToAdd)
 	} else {
 		// Just trim if the width of the terminal is this small
-		line = line[:ts.width-len(position)]
+		lineTop = lineTop[:ts.width-len(position)]
 	}
 
 	// TODO: add terminal's default background color
 	// Will probably have to add termenv because it's not that easy
 	// Add color put the strings together
 	position = StyleFgBlack + StyleBgBlue + position + StyleReset
-	line = StyleBgWhite + StyleFgBlack + line + StyleReset + position
+	lineTop = StyleBgWhite + StyleFgBlack + lineTop + StyleReset + position
 
-	drawInstr := drawInstruction{
+	drawInstrTop := drawInstruction{
 		x:    0,
 		y:    ts.height - 2,
-		line: line,
+		line: lineTop,
 	}
 
-	ts.drawQueue = append(ts.drawQueue, drawInstr)
+	ts.drawQueue = append(ts.drawQueue, drawInstrTop)
 
-	// Do we need to pad this line with spaces to clear the screen here?
-	// Now we get the second line, which for now only holds the file permissions
+	// We add the file permissions on the second line
+	// In input mode this line will be overwritten in a separate function
 	fileInfo, err := ts.cwdFiles[ts.selectionPos].Info()
 	if err != nil {
 		// If we can't get the file info, just exit the function
 		return
 	}
-	filePerms := fileInfo.Mode().String()
+	lineBottom := fileInfo.Mode().String()
+	lineBottom = addPadding(lineBottom, " ", ts.width)
 
-	filePerms = addPadding(filePerms, " ", ts.width)
-
-	drawInstr = drawInstruction{
+	drawInstrBottom := drawInstruction{
 		x:    0,
 		y:    ts.height - 1,
-		line: filePerms,
+		line: lineBottom,
 	}
 
-	ts.drawQueue = append(ts.drawQueue, drawInstr)
+	ts.drawQueue = append(ts.drawQueue, drawInstrBottom)
+}
+
+func (ts *terminalSession) queueInputLine(input string) {
+	input = addPadding(input, " ", ts.width)
+
+	drawInstrBottom := drawInstruction{
+		x:    0,
+		y:    ts.height - 1,
+		line: input,
+	}
+
+	ts.drawQueue = append(ts.drawQueue, drawInstrBottom)
 }

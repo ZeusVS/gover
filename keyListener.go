@@ -1,10 +1,5 @@
 package main
 
-import (
-	"bufio"
-	"os"
-)
-
 // Ideas:
 // ? show manual
 
@@ -28,8 +23,6 @@ import (
 // n search next
 // N search previous
 
-// ? show all commands
-
 type command struct {
 	callback   func()
 	subCommand map[rune]command
@@ -37,13 +30,15 @@ type command struct {
 
 func (ts *terminalSession) startKeyListener() {
 	// Define the command tree
-	startCommand := command{
+	ts.startCmd = command{
 		subCommand: map[rune]command{
 			// Actions
 			// Quit gover
 			'q': {callback: ts.quit},
 			// Open current selection
 			inputMap["enter"]: {callback: ts.open},
+			// Rename current selection
+			'R': {callback: ts.rename},
 
 			// Motions
 			// Move to home directory
@@ -71,7 +66,7 @@ func (ts *terminalSession) startKeyListener() {
 			// Scroll right preview panel half a page
 			inputMap["ctrl-k"]: {callback: func() { ts.moveRightPreview(ts.width / 4) }},
 
-			// Multiline command starting with 'g'
+			// Multi-char commands
 			'g': {
 				subCommand: map[rune]command{
 					// Go to top on main panel
@@ -82,29 +77,38 @@ func (ts *terminalSession) startKeyListener() {
 	}
 
 	// Set the current command to the start command
-	ts.command = startCommand
+	ts.curCmd = ts.startCmd
 
 	// Make a channel that recieves all runes read from Stdin
-	r := bufio.NewReader(os.Stdin)
-	readCh := make(chan (rune))
-	readCh = runeReader(r)
+	go func() {
+		for {
+			ru, _, err := ts.in.ReadRune()
+			if err != nil {
+				continue
+			}
+			ts.inCh <- ru
+		}
+	}()
 
 	// Loop where we check if ts.done is closed or a rune is read
 	for {
-		select {
-		case <-ts.done:
-			return
-		case ru := <-readCh:
-			ts.getCommand(ru, startCommand)
+		// Don't read from the channel if we are in inputMode
+		if !ts.inputMode {
+			select {
+			case <-ts.done:
+				return
+			case ru := <-ts.inCh:
+				ts.getCommand(ru)
+			}
 		}
 	}
 }
 
-func (ts *terminalSession) getCommand(ru rune, startCommand command) {
+func (ts *terminalSession) getCommand(ru rune) {
 	// If the input rune results in a nonexistant command we reset the command
-	command, ok := ts.command.subCommand[ru]
+	command, ok := ts.curCmd.subCommand[ru]
 	if !ok {
-		ts.command = startCommand
+		ts.curCmd = ts.startCmd
 		return
 	}
 
@@ -112,27 +116,10 @@ func (ts *terminalSession) getCommand(ru rune, startCommand command) {
 	if command.callback != nil {
 		callBackFunc := command.callback
 		callBackFunc()
+		ts.curCmd = ts.startCmd
 		return
 	}
 
 	// Otherwise we will go to the remaining subcommands
-	ts.command = command
-}
-
-// Function that makes a runereader goroutine
-func runeReader(r *bufio.Reader) chan rune {
-	ch := make(chan (rune))
-	go func() {
-		for {
-			for {
-				ru, _, err := r.ReadRune()
-				if err != nil {
-					continue
-				}
-				ch <- ru
-			}
-		}
-	}()
-
-	return ch
+	ts.curCmd = command
 }

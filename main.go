@@ -32,6 +32,6 @@ func main() {
 		ts.StopTerminalSession()
 	}()
 
-	// Wait for all goroutines to finish before closing
+	// Wait for all goroutines to finish before closing the program
 	wg.Wait()
 }
