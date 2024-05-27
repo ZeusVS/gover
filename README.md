@@ -22,9 +22,11 @@ go install github.com/ZeusVS/gover@latest
 ```
 - 'q': Quit the program
 
-- 'enter': Open the selected in a new window:
+- 'enter': Open the current selection in a new window:
                Directory: default terminal
                Text file: default editor
+
+- 'R': Rename the current selection
 
 - '~':  Go to your home directory
 - 'h':  Go to parent directory
