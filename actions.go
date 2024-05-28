@@ -4,6 +4,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 	"unicode/utf8"
 )
 
@@ -243,10 +244,16 @@ func (ts *terminalSession) open() {
 func (ts *terminalSession) rename() {
 	// TODO: Move the selectionPos to the correct location after rename
 	ts.inputMode = true
+	defer func() { ts.inputMode = false }()
 	runeSlice := []rune{}
 	for {
 		ts.queueInputLine("Rename: " + string(runeSlice))
 		ru := <-ts.inCh
+		if ru == inputMap["escape"] {
+			// Redraw the original bottomBar
+			ts.queueBottomBar()
+			return
+		}
 		if ru == inputMap["enter"] {
 			break
 		}
@@ -256,8 +263,6 @@ func (ts *terminalSession) rename() {
 			runeSlice = append(runeSlice, ru)
 		}
 	}
-	ts.inputMode = false
-
 	name := string(runeSlice)
 
 	selectionName := ts.cwdFiles[ts.selectionPos].Name()
@@ -272,5 +277,62 @@ func (ts *terminalSession) rename() {
 		return
 	}
 	ts.cwdFiles = cwdFiles
+	ts.refreshQueue()
+}
+
+func (ts *terminalSession) search() {
+	// TODO: Add regex to the search methods
+	ts.inputMode = true
+	defer func() { ts.inputMode = false }()
+	runeSlice := []rune{}
+	for {
+		ts.queueInputLine("Search: " + string(runeSlice))
+		ru := <-ts.inCh
+		if ru == inputMap["escape"] {
+			// Redraw the original bottomBar
+			ts.queueBottomBar()
+			return
+		}
+		if ru == inputMap["enter"] {
+			break
+		}
+		if ru == inputMap["backspace"] {
+			runeSlice = runeSlice[:len(runeSlice)-1]
+		} else {
+			runeSlice = append(runeSlice, ru)
+		}
+	}
+	ts.searchStr = string(runeSlice)
+
+	ts.searchN()
+}
+
+func (ts *terminalSession) searchN() {
+	if ts.searchStr == "" {
+		return
+	}
+	for i := ts.selectionPos + 1; i < len(ts.cwdFiles); i++ {
+		// Only search for next occurence -> change?
+		if strings.Contains(ts.cwdFiles[i].Name(), ts.searchStr) {
+			ts.selectionPos = i
+			break
+		}
+	}
+
+	ts.refreshQueue()
+}
+
+func (ts *terminalSession) searchP() {
+	if ts.searchStr == "" {
+		return
+	}
+	for i := ts.selectionPos - 1; i >= 0; i-- {
+		// Only search for next occurence -> change?
+		if strings.Contains(ts.cwdFiles[i].Name(), ts.searchStr) {
+			ts.selectionPos = i
+			break
+		}
+	}
+
 	ts.refreshQueue()
 }

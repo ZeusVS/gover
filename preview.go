@@ -8,26 +8,34 @@ import (
 	"unicode/utf8"
 )
 
-// Issues:
-// ts.selectionPos also colors selected field in the preview pane
-// Links don't show up properly in preview pane (only see => not the actual destination)
-
-// Preview types:
-// Directories DONE
-// Text files TODO
+// TODO: Add preview types?
 // Pdf?
 // Images?
 // Videos?
-// Everything else will be filled with ╱╱╱╱ for now
 
-// Here we will preview the currently selected file
 func (ts *terminalSession) queuePreview() {
 	// The width of the preview pane is defined
 	width := int(math.Ceil(float64(ts.width)/2.0) - 1)
 
-	if ts.cwdFiles[ts.selectionPos].IsDir() {
+	file, err := ts.cwdFiles[ts.selectionPos].Info()
+	if err != nil {
+		return
+	}
+
+	if file.Mode()&os.ModeSymlink != 0 {
+		link, err := filepath.EvalSymlinks(filepath.Join(ts.cwd, file.Name()))
+		// Only change the file if the link is found
+		if err == nil {
+			linkInfo, err := os.Stat(link)
+			if err == nil {
+				file = linkInfo
+			}
+		}
+	}
+
+	if file.IsDir() {
 		// Get the files under the currently selected dir
-		fileName := ts.cwdFiles[ts.selectionPos].Name()
+		fileName := file.Name()
 		previewDir := filepath.Join(ts.cwd, fileName)
 		previewFiles, err := os.ReadDir(previewDir)
 		ts.previewLen = len(previewFiles)
@@ -47,7 +55,7 @@ func (ts *terminalSession) queuePreview() {
 
 	// Check if file is valid utf8 and can be displayed as text
 	// TODO: maybe change this to only read the first line of the file to check UTF8
-	filePath := filepath.Join(ts.cwd, ts.cwdFiles[ts.selectionPos].Name())
+	filePath := filepath.Join(ts.cwd, file.Name())
 	b, _ := os.ReadFile(filePath)
 	fileContent := string(b)
 	if utf8.ValidString(fileContent) {

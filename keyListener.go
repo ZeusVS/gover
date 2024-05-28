@@ -1,5 +1,7 @@
 package main
 
+import "time"
+
 // Ideas:
 // ? show manual
 
@@ -10,14 +12,17 @@ package main
 // s/S sort files by size
 // ???
 
-// S + ...
-// h show/hide hidden files
+// <c-h> show/hide hidden files
 
+// Will be hard to implement:
+// u     undo
+// <c-r> redo
+
+// D delete
+// ?/? create new file/directory
 // y copy
 // d cut
 // p paste
-// r rename
-// i new ???
 
 // / search
 // n search next
@@ -39,6 +44,12 @@ func (ts *terminalSession) startKeyListener() {
 			inputMap["enter"]: {callback: ts.open},
 			// Rename current selection
 			'R': {callback: ts.rename},
+			// Search the current files
+			'/': {callback: ts.search},
+			// Search next
+			'n': {callback: ts.searchN},
+			// Search previous
+			'N': {callback: ts.searchP},
 
 			// Motions
 			// Move to home directory
@@ -58,13 +69,13 @@ func (ts *terminalSession) startKeyListener() {
 			// Go down a directory level
 			'l': {callback: ts.moveDownDir},
 			// Scroll up preview panel half a page
-			inputMap["ctrl-u"]: {callback: func() { ts.moveUpPreview(ts.height / 2) }},
+			inputMap["<c-u>"]: {callback: func() { ts.moveUpPreview(ts.height / 2) }},
 			// Scroll down preview panel half a page
-			inputMap["ctrl-d"]: {callback: func() { ts.moveDownPreview(ts.height / 2) }},
+			inputMap["<c-d>"]: {callback: func() { ts.moveDownPreview(ts.height / 2) }},
 			// Scroll left preview panel half a page
-			inputMap["ctrl-f"]: {callback: func() { ts.moveLeftPreview(ts.width / 4) }},
+			inputMap["<c-f>"]: {callback: func() { ts.moveLeftPreview(ts.width / 4) }},
 			// Scroll right preview panel half a page
-			inputMap["ctrl-k"]: {callback: func() { ts.moveRightPreview(ts.width / 4) }},
+			inputMap["<c-k>"]: {callback: func() { ts.moveRightPreview(ts.width / 4) }},
 
 			// Multi-char commands
 			'g': {
@@ -109,14 +120,33 @@ func (ts *terminalSession) getCommand(ru rune) {
 	command, ok := ts.curCmd.subCommand[ru]
 	if !ok {
 		ts.curCmd = ts.startCmd
+		ts.cmdStr = ""
 		return
 	}
+
+	// Add the string to the "commandline"
+	cmdStr := string(ru)
+	for keyStr, valRu := range inputMap {
+		if valRu == ru {
+			cmdStr = keyStr
+			break
+		}
+	}
+
+	ts.cmdStr += cmdStr
+	ts.queueBottomBar()
 
 	// If the command has a callback function we call it
 	if command.callback != nil {
 		callBackFunc := command.callback
 		callBackFunc()
 		ts.curCmd = ts.startCmd
+		ts.cmdStr = ""
+		// Make pressed commands display for 50ms before getting wiped
+		go func() {
+			time.Sleep(time.Millisecond * 50)
+			ts.queueBottomBar()
+		}()
 		return
 	}
 

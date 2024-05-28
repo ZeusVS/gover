@@ -31,6 +31,8 @@ type terminalSession struct {
 
 	startCmd  command
 	curCmd    command
+	cmdStr    string
+	searchStr string
 	inputMode bool
 
 	drawQueue    []drawInstruction
@@ -92,6 +94,8 @@ func StartTerminalSession() (terminalSession, error) {
 		originalState: originalState,
 		fdIn:          fdIn,
 
+		cmdStr:    "",
+		searchStr: "",
 		inputMode: false,
 
 		drawQueue:    []drawInstruction{},

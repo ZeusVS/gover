@@ -18,6 +18,9 @@ func (ts *terminalSession) queueBottomBar() {
 		position = ""
 	}
 
+	// Make the command placement line out neatly with the position
+	cmdWidth := len(position)
+
 	// Get the path of the selected item
 	// Prevent "//" at root
 	cwd := ts.cwd
@@ -86,7 +89,16 @@ func (ts *terminalSession) queueBottomBar() {
 		return
 	}
 	lineBottom := fileInfo.Mode().String()
-	lineBottom = addPadding(lineBottom, " ", ts.width)
+
+	// Make the command and position line out neatly
+	if ts.width > cmdWidth {
+		lineBottom = addPadding(lineBottom, " ", ts.width-cmdWidth)
+		cmdStr := addPadding(ts.cmdStr, " ", cmdWidth)
+		lineBottom += cmdStr
+	} else {
+		cmdStr := addPadding(ts.cmdStr, " ", ts.width)
+		lineBottom = cmdStr
+	}
 
 	drawInstrBottom := drawInstruction{
 		x:    0,

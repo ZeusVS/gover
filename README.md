@@ -27,6 +27,9 @@ go install github.com/ZeusVS/gover@latest
                Text file: default editor
 
 - 'R': Rename the current selection
+- '/': Search the main panel for specific text
+- 'n': Jump to next occurrence of the searchstring
+- 'N': Jump to previous occurrence of the searchstring
 
 - '~':  Go to your home directory
 - 'h':  Go to parent directory
