@@ -135,10 +135,10 @@ func (ts *terminalSession) search() {
 			fileStr := strings.ToLower(file.Name())
 			searchStr := strings.ToLower(ts.searchStr)
 			if strI := strings.Index(fileStr, searchStr); strI >= 0 {
-                // Get the part of the string from the original filename to make cases match
+				// Get the part of the string from the original filename to make cases match
 				line := file.Name()[strI : strI+len(searchStr)]
-                // Style the highlight
-                // TODO: Change the yellow background?
+				// Style the highlight
+				// TODO: Change the yellow background?
 				line = StyleBgYellow + StyleFgBlack + line + StyleReset
 				drawInstr := drawInstruction{
 					// +4 because of spaces + icons
@@ -158,32 +158,80 @@ func (ts *terminalSession) searchN() {
 	if ts.searchStr == "" {
 		return
 	}
+	found := false
+	// first search after the current selection
 	for i := ts.selectionPos + 1; i < len(ts.cwdFiles); i++ {
 		// For now we ignore char casing
 		fileStr := strings.ToLower(ts.cwdFiles[i].Name())
 		searchStr := strings.ToLower(ts.searchStr)
 		if strings.Contains(fileStr, searchStr) {
 			ts.selectionPos = i
+			found = true
 			break
 		}
 	}
 
+	if found == false {
+		// then search from beginning up to current selection
+		for i := 0; i <= ts.selectionPos; i++ {
+			// For now we ignore char casing
+			fileStr := strings.ToLower(ts.cwdFiles[i].Name())
+			searchStr := strings.ToLower(ts.searchStr)
+			if strings.Contains(fileStr, searchStr) {
+				ts.selectionPos = i
+				found = true
+				break
+			}
+		}
+	}
+
+	if found == false {
+		line := StyleFgRed + "Pattern not found: " + ts.searchStr + StyleReset
+		ts.queueInputLine(line)
+		return
+	}
+
 	ts.refreshQueue()
+	ts.queueInputLine("Search: " + ts.searchStr)
 }
 
 func (ts *terminalSession) searchP() {
 	if ts.searchStr == "" {
 		return
 	}
+
+	found := false
+
 	for i := ts.selectionPos - 1; i >= 0; i-- {
 		// For now we ignore char casing
 		fileStr := strings.ToLower(ts.cwdFiles[i].Name())
 		searchStr := strings.ToLower(ts.searchStr)
 		if strings.Contains(fileStr, searchStr) {
 			ts.selectionPos = i
+			found = true
 			break
 		}
 	}
 
+	if found == false {
+		for i := len(ts.cwdFiles) - 1; i >= ts.selectionPos; i-- {
+			// For now we ignore char casing
+			fileStr := strings.ToLower(ts.cwdFiles[i].Name())
+			searchStr := strings.ToLower(ts.searchStr)
+			if strings.Contains(fileStr, searchStr) {
+				ts.selectionPos = i
+				found = true
+				break
+			}
+		}
+	}
+
+	if found == false {
+		line := StyleFgRed + "Pattern not found: " + ts.searchStr + StyleReset
+		ts.queueInputLine(line)
+		return
+	}
+
 	ts.refreshQueue()
+	ts.queueInputLine("Search: " + ts.searchStr)
 }

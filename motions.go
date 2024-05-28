@@ -188,4 +188,3 @@ func (ts *terminalSession) goHome() {
 
 	ts.refreshQueue()
 }
-

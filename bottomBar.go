@@ -6,6 +6,11 @@ import (
 	"strings"
 )
 
+var (
+	// Give the commands an arbitrary width
+	cmdWidth int = 6
+)
+
 func (ts *terminalSession) queueBottomBar() {
 	// Get the index of the selected item
 	selectionIndex := ts.selectionPos + 1
@@ -17,9 +22,6 @@ func (ts *terminalSession) queueBottomBar() {
 	if len(position) > ts.width {
 		position = ""
 	}
-
-	// Make the command placement line out neatly with the position
-	cmdWidth := len(position)
 
 	// Get the path of the selected item
 	// Prevent "//" at root
@@ -90,7 +92,6 @@ func (ts *terminalSession) queueBottomBar() {
 	}
 	lineBottom := fileInfo.Mode().String()
 
-	// Make the command and position line out neatly
 	if ts.width > cmdWidth {
 		lineBottom = addPadding(lineBottom, " ", ts.width-cmdWidth)
 		cmdStr := addPadding(ts.cmdStr, " ", cmdWidth)
@@ -109,8 +110,20 @@ func (ts *terminalSession) queueBottomBar() {
 	ts.drawQueue = append(ts.drawQueue, drawInstrBottom)
 }
 
+func (ts *terminalSession) clearCommand() {
+
+	emptyCmd := addPadding("", " ", cmdWidth)
+	drawInstrBottom := drawInstruction{
+		x:    ts.width - cmdWidth,
+		y:    ts.height - 1,
+		line: emptyCmd,
+	}
+
+	ts.drawQueue = append(ts.drawQueue, drawInstrBottom)
+}
+
 func (ts *terminalSession) queueInputLine(input string) {
-	input = addPadding(input, " ", ts.width)
+	input = addPadding(input, " ", ts.width-cmdWidth)
 
 	drawInstrBottom := drawInstruction{
 		x:    0,

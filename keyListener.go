@@ -139,9 +139,10 @@ func (ts *terminalSession) getCommand(ru rune) {
 		ts.curCmd = ts.startCmd
 		ts.cmdStr = ""
 		// Make pressed commands display for 50ms before getting wiped
+		// TODO: Input commands are blocking so these do not get wiped, fix
 		go func() {
 			time.Sleep(time.Millisecond * 50)
-			ts.queueBottomBar()
+			ts.clearCommand()
 		}()
 		return
 	}
