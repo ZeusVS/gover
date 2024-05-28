@@ -2,8 +2,8 @@ package main
 
 import "time"
 
-// Ideas:
-// ? show manual
+// TODO: Ideas:
+// ? show manual/all hotkeys
 
 // s + ...
 // d/D sort dirs first/last (default)
@@ -23,10 +23,6 @@ import "time"
 // y copy
 // d cut
 // p paste
-
-// / search
-// n search next
-// N search previous
 
 type command struct {
 	callback   func()
