@@ -258,6 +258,9 @@ func (ts *terminalSession) rename() {
 			break
 		}
 		if ru == inputMap["backspace"] {
+			if len(runeSlice) == 0 {
+				continue
+			}
 			runeSlice = runeSlice[:len(runeSlice)-1]
 		} else {
 			runeSlice = append(runeSlice, ru)
@@ -281,6 +284,7 @@ func (ts *terminalSession) rename() {
 }
 
 func (ts *terminalSession) search() {
+	// TODO: Highlight all found search entries
 	// TODO: Add regex to the search methods
 	ts.inputMode = true
 	defer func() { ts.inputMode = false }()
@@ -291,18 +295,42 @@ func (ts *terminalSession) search() {
 		if ru == inputMap["escape"] {
 			// Redraw the original bottomBar
 			ts.queueBottomBar()
+			// Reset the highlights
+			ts.queueMainFiles()
 			return
 		}
 		if ru == inputMap["enter"] {
 			break
 		}
 		if ru == inputMap["backspace"] {
+			if len(runeSlice) == 0 {
+				continue
+			}
 			runeSlice = runeSlice[:len(runeSlice)-1]
 		} else {
 			runeSlice = append(runeSlice, ru)
 		}
+
+		// Reset the highlights
+		ts.queueMainFiles()
+		// Add highlights to all matching strings
+		ts.searchStr = string(runeSlice)
+		for i, file := range ts.cwdFiles {
+			fileStr := strings.ToLower(file.Name())
+			searchStr := strings.ToLower(ts.searchStr)
+			if strI := strings.Index(fileStr, searchStr); strI >= 0 {
+				line := file.Name()[strI : strI+len(searchStr)]
+				line = StyleBgYellow + StyleFgBlack + line + StyleReset
+				drawInstr := drawInstruction{
+					// +4 because of spaces + icons
+					x:    strI + 4,
+					y:    i - ts.mainOffset,
+					line: line,
+				}
+				ts.drawQueue = append(ts.drawQueue, drawInstr)
+			}
+		}
 	}
-	ts.searchStr = string(runeSlice)
 
 	ts.searchN()
 }
@@ -312,8 +340,10 @@ func (ts *terminalSession) searchN() {
 		return
 	}
 	for i := ts.selectionPos + 1; i < len(ts.cwdFiles); i++ {
-		// Only search for next occurence -> change?
-		if strings.Contains(ts.cwdFiles[i].Name(), ts.searchStr) {
+		// For now we ignore char casing
+		fileStr := strings.ToLower(ts.cwdFiles[i].Name())
+		searchStr := strings.ToLower(ts.searchStr)
+		if strings.Contains(fileStr, searchStr) {
 			ts.selectionPos = i
 			break
 		}
@@ -327,8 +357,10 @@ func (ts *terminalSession) searchP() {
 		return
 	}
 	for i := ts.selectionPos - 1; i >= 0; i-- {
-		// Only search for next occurence -> change?
-		if strings.Contains(ts.cwdFiles[i].Name(), ts.searchStr) {
+		// For now we ignore char casing
+		fileStr := strings.ToLower(ts.cwdFiles[i].Name())
+		searchStr := strings.ToLower(ts.searchStr)
+		if strings.Contains(fileStr, searchStr) {
 			ts.selectionPos = i
 			break
 		}
