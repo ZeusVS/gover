@@ -1,11 +1,16 @@
 package main
 
 import (
+	"bytes"
 	"math"
 	"os"
 	"path/filepath"
 	"strings"
 	"unicode/utf8"
+
+	"github.com/alecthomas/chroma/v2/formatters"
+	"github.com/alecthomas/chroma/v2/lexers"
+	"github.com/alecthomas/chroma/v2/styles"
 )
 
 // TODO: Add preview types?
@@ -60,6 +65,7 @@ func (ts *terminalSession) queuePreview() {
 	fileContent := string(b)
 	if utf8.ValidString(fileContent) {
 		ts.queueFileContents(
+			file.Name(),
 			fileContent,
 			ts.previewOffsetV,
 			ts.previewOffsetH,
@@ -83,27 +89,47 @@ func (ts *terminalSession) queuePreview() {
 }
 
 func (ts *terminalSession) queueFileContents(
+	name string,
 	contents string,
 	offsetV int,
 	offsetH int,
 	col int,
 	width int) {
-	lines := strings.Split(contents, "\n")
+
+	// First we apply the syntax highlighting
+	lexer := lexers.Match(name)
+	if lexer == nil {
+		lexer = lexers.Fallback
+	}
+	// TODO: Make the syntax highlighting match the terminal colors
+	style := styles.Get("tokyonight-night")
+
+	formatter := formatters.Get("terminal256")
+	iterator, err := lexer.Tokenise(nil, contents)
+	if err != nil {
+		// TODO
+	}
+
+	// Write the text with syntax highlighting to a buffer
+	buffer := new(bytes.Buffer)
+	err = formatter.Format(buffer, style, iterator)
+	if err != nil {
+		// TODO
+	}
+
+	lines := strings.Split(buffer.String(), "\n")
 	ts.previewLen = len(lines)
 
+	// Split up the buffer text per newline and add to the drawQueue
 	for i, line := range lines {
 		if i < offsetV || i > ts.height+offsetV-1-BottomRows {
 			continue
 		}
-		// Replace all tabs with four spaces
+
 		line = strings.ReplaceAll(line, "\t", "    ")
-		// If line is longer than the offset
-		if len(line) > offsetH {
-			line = line[offsetH:]
-			// Otherwise make line empty
-		} else {
-			line = ""
-		}
+		// Trim off the first "offsetH" characters
+		line = removeFirstChars(line, offsetH)
+		// Make every line the correct width
 		line = addPadding(line, " ", width)
 
 		drawInstr := drawInstruction{
@@ -111,7 +137,6 @@ func (ts *terminalSession) queueFileContents(
 			y:    i - offsetV,
 			line: line,
 		}
-
 		ts.drawQueue = append(ts.drawQueue, drawInstr)
 	}
 
@@ -127,4 +152,31 @@ func (ts *terminalSession) queueFileContents(
 		}
 		ts.drawQueue = append(ts.drawQueue, drawInstr)
 	}
+}
+
+func removeFirstChars(line string, n int) string {
+
+	runeLine := []rune(line)
+	escapeCode := false
+	returnLine := ""
+	for _, rune := range runeLine {
+		// Escape codes get started with escape and stop at m for the color codes
+		// Skip adding n non escape characters to the return string
+		if escapeCode {
+			if rune == 'm' {
+				escapeCode = false
+			}
+			returnLine += string(rune)
+			continue
+		} else if rune == inputMap["escape"] {
+			escapeCode = true
+			returnLine += string(rune)
+		} else if n > 0 {
+			n -= 1
+		} else {
+			returnLine += string(rune)
+		}
+	}
+
+	return returnLine
 }

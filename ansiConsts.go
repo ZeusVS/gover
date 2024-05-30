@@ -36,11 +36,11 @@ const (
 	StyleBgWhite  = CSI + "47m"
 
 	// Icons
-	ExecutableIcon = "\uf489 "
-	DirectoryIcon  = "\uf115 "
-	FileIcon       = "\uf016 "
-	LinkDirIcon    = "\uf482 "
-	LinkFileIcon   = "\uf481 "
+	ExecutableIcon = '\uf489'
+	DirectoryIcon  = '\uf115'
+	FileIcon       = '\uf016'
+	LinkDirIcon    = '\uf482'
+	LinkFileIcon   = '\uf481'
 )
 
 // Use a var because we can't make a map a const

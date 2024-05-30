@@ -57,7 +57,7 @@ func (ts *terminalSession) queueFiles(
 			symbol := LinkDirIcon
 			linkInfo, err := os.Stat(link)
 			if err != nil {
-				symbol = "?"
+				symbol = '?'
 			} else if !linkInfo.IsDir() {
 				symbol = LinkFileIcon
 			}
@@ -94,7 +94,7 @@ func (ts *terminalSession) queueFiles(
 }
 
 func (ts *terminalSession) getDirLine(width int, i int, file os.FileInfo, dir string, selection bool) string {
-	line := " " + DirectoryIcon + " " + file.Name()
+	line := " " + string(DirectoryIcon) + "  " + file.Name()
 	dirPath, err := os.ReadDir(filepath.Join(dir, file.Name()))
 	// Get the number of files underneath the directory
 	var dirAmt string
@@ -121,7 +121,7 @@ func (ts *terminalSession) getDirLine(width int, i int, file os.FileInfo, dir st
 }
 
 func (ts *terminalSession) getExeLine(width int, i int, file os.FileInfo, selection bool) string {
-	line := " " + ExecutableIcon + " " + file.Name() + "*"
+	line := " " + string(ExecutableIcon) + "  " + file.Name() + "*"
 	fileSize := getFileSize(file.Size())
 
 	// Do not display filesize if there is no space for it
@@ -142,7 +142,7 @@ func (ts *terminalSession) getExeLine(width int, i int, file os.FileInfo, select
 }
 
 func (ts *terminalSession) getFileLine(width int, i int, file os.FileInfo, selection bool) string {
-	line := " " + FileIcon + " " + file.Name()
+	line := " " + string(FileIcon) + "  " + file.Name()
 	fileSize := getFileSize(file.Size())
 
 	// Do not display filesize if there is no space for it
@@ -159,8 +159,8 @@ func (ts *terminalSession) getFileLine(width int, i int, file os.FileInfo, selec
 	return line
 }
 
-func (ts *terminalSession) getLinkLine(width int, i int, file os.FileInfo, link string, icon string, selection bool) string {
-	line := " " + icon + " " + file.Name() + " => " + link
+func (ts *terminalSession) getLinkLine(width int, i int, file os.FileInfo, link string, icon rune, selection bool) string {
+	line := " " + string(icon) + "  " + file.Name() + " => " + link
 	line = addPadding(line, " ", width)
 
 	if i == ts.selectionPos && selection {
@@ -172,16 +172,39 @@ func (ts *terminalSession) getLinkLine(width int, i int, file os.FileInfo, link 
 }
 
 func addPadding(line string, padChar string, padWidth int) string {
-	// Add spaces to make it fill the file pane slot
-	// Rounded down width
-	addedSpaces := padWidth - len([]rune(line))
-	if addedSpaces > 0 {
-		line = fmt.Sprintf("%s%s", line, strings.Repeat(padChar, addedSpaces))
+	// Chop off part of the string if it's too large
+	runeLine := []rune(line)
+	var trimmedLine string
+	chars := 0
+	escapeCode := false
+	for _, rune := range runeLine {
+		// Escape codes get started with escape and stop at m for the color codes
+		// Only add 1 to char for non escape code runes
+		// Stop adding these chars when past the 'padWidth'
+		if escapeCode {
+			if rune == 'm' {
+				escapeCode = false
+			}
+			trimmedLine += string(rune)
+			continue
+		} else if rune == inputMap["escape"] {
+			escapeCode = true
+			trimmedLine += string(rune)
+		} else if chars >= padWidth {
+			continue
+		} else {
+			trimmedLine += string(rune)
+			chars += 1
+		}
 	}
 
-	// Chop off part of the string if it's too large
-	line = string([]rune(line)[:padWidth])
-	return line
+	// Add spaces to make it fill the file panel slot
+	addedSpaces := padWidth - chars
+	if addedSpaces > 0 {
+		trimmedLine = fmt.Sprintf("%s%s", trimmedLine, strings.Repeat(padChar, addedSpaces))
+	}
+
+	return trimmedLine
 }
 
 func getFileSize(size int64) string {
