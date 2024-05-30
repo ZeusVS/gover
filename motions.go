@@ -131,10 +131,15 @@ func (ts *terminalSession) moveDownPreview(n int) {
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
+	if ts.previewLen <= ts.height-BottomRows {
+		return
+	}
+
 	ts.previewOffsetV += n
 
 	// Reset if we are beyond the end of the files
 	// TODO: it seems there is always an extra empty line at the end, check it out
+	// Probably to do with splitting on \n and an empty last string
 	if ts.previewOffsetV > ts.previewLen-(ts.height-BottomRows) {
 		ts.previewOffsetV = ts.previewLen - (ts.height - BottomRows)
 	}
