@@ -1,14 +1,14 @@
 # Gover
-## Terminal file manager for unix systems in go
-The current state of the program is very alpha.\
-Please note, this file manager is only for unix based systems!
+## Terminal file manager in go
+This project is in active development, currently pre-alpha.\
+Please note, this file manager is only for unix based systems.
 
-### Etymology:
-Word blend of:\
+### Etymology
+Word blend of\
     - go: The programming language this file manager is written in\
     - rover: The file manager this one is loosely based upon
 
-### How to start:
+### How to start
 - Make sure you have go 1.22.3 installed
 - Install using the following:
 ```bash
@@ -18,7 +18,7 @@ go install github.com/ZeusVS/gover@latest
 - Now you should be able to execute gover in your terminal
     - If you have problems make sure your $GOPATH is set and $GOPATH/bin is added to your $PATH
 
-### Commands:
+### Commands
 ```
 Actions:
 'q'      Quit Gover
@@ -31,7 +31,7 @@ Actions:
 
 'd'     Mark the currently selected file for cutting/moving
 'y'     Mark the currently selected file for copying
-'p'     Paste the marked cut/copy file to the current directory
+'p'     Cut/Copy the marked file to the current directory
 
 'D'     (Recursively) delete the current selection - will ask for confirmation
 'R'     Rename the current selection

@@ -34,7 +34,7 @@ Actions:
 
 'd'     Mark the currently selected file for cutting/moving
 'y'     Mark the currently selected file for copying
-'p'     Paste the marked cut/copy file to the current directory
+'p'     Cut/Copy the marked file to the current directory
 
 'D'     (Recursively) delete the current selection - will ask for confirmation
 'R'     Rename the current selection
