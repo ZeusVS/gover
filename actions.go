@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"io"
+	"io/fs"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -11,6 +13,215 @@ import (
 
 func (ts *terminalSession) quit() {
 	close(ts.done)
+}
+
+// For now the only thing that happens is clearing of the copy and cutFiles
+func (ts *terminalSession) clearActions() {
+	ts.copyFile = ""
+	ts.cutFile = ""
+	ts.queueBottomBar()
+}
+
+func (ts *terminalSession) copy() {
+	fullPath := filepath.Join(ts.cwd, ts.cwdFiles[ts.selectionPos].Name())
+	ts.copyFile = fullPath
+	ts.cutFile = ""
+	ts.queueBottomBar()
+}
+
+func (ts *terminalSession) cut() {
+	fullPath := filepath.Join(ts.cwd, ts.cwdFiles[ts.selectionPos].Name())
+	ts.cutFile = fullPath
+	ts.copyFile = ""
+	ts.queueBottomBar()
+}
+
+func (ts *terminalSession) insertFile() {
+	ts.inputMode = true
+	defer func() { ts.inputMode = false }()
+
+	runeSlice := []rune{}
+	for {
+		ts.queueInputLine("Create new file: " + string(runeSlice))
+		ru := <-ts.inCh
+		if ru == inputMap["escape"] {
+			// Redraw the original bottomBar
+			ts.queueBottomBar()
+			return
+		}
+		if ru == inputMap["enter"] {
+			break
+		}
+		if ru == inputMap["backspace"] {
+			if len(runeSlice) == 0 {
+				continue
+			}
+			runeSlice = runeSlice[:len(runeSlice)-1]
+		} else {
+			runeSlice = append(runeSlice, ru)
+		}
+	}
+	name := string(runeSlice)
+
+	filename := filepath.Join(ts.cwd, name)
+	file, err := os.Create(filename)
+	if err != nil {
+		return
+	}
+	// Everyone can read, only owner can write
+	_ = file.Chmod(0644)
+
+	// Refresh files
+	cwdFiles, err := os.ReadDir(ts.cwd)
+	if err != nil {
+		return
+	}
+	ts.cwdFiles = ts.sortFunc(cwdFiles)
+	ts.refreshQueue()
+}
+
+func (ts *terminalSession) insertDir() {
+	ts.inputMode = true
+	defer func() { ts.inputMode = false }()
+
+	runeSlice := []rune{}
+	for {
+		ts.queueInputLine("Create new directory: " + string(runeSlice))
+		ru := <-ts.inCh
+		if ru == inputMap["escape"] {
+			// Redraw the original bottomBar
+			ts.queueBottomBar()
+			return
+		}
+		if ru == inputMap["enter"] {
+			break
+		}
+		if ru == inputMap["backspace"] {
+			if len(runeSlice) == 0 {
+				continue
+			}
+			runeSlice = runeSlice[:len(runeSlice)-1]
+		} else {
+			runeSlice = append(runeSlice, ru)
+		}
+	}
+	name := string(runeSlice)
+
+	filename := filepath.Join(ts.cwd, name)
+	// Only owner can write, read and execute for everyone
+	err := os.Mkdir(filename, 0755)
+	if err != nil {
+		ts.queueBottomBar()
+		return
+	}
+
+	// Refresh files
+	cwdFiles, err := os.ReadDir(ts.cwd)
+	if err != nil {
+		return
+	}
+	ts.cwdFiles = ts.sortFunc(cwdFiles)
+	ts.refreshQueue()
+}
+
+func (ts *terminalSession) paste() {
+	// If both are empty we do nothing
+	if ts.cutFile == "" && ts.copyFile == "" {
+		return
+	}
+
+	source := ts.cutFile + ts.copyFile
+	destination := ts.cwd
+	// Copy the file(s) here
+	sourceInfo, err := os.Stat(source)
+	if err != nil {
+		return
+	}
+	if sourceInfo.IsDir() {
+		copyDir(source, destination)
+	} else {
+		outpath := filepath.Join(destination, filepath.Base(source))
+		copyFile(source, outpath)
+	}
+
+	// Only in the case of cutFile will we also remove the original
+	if ts.cutFile != "" {
+		err := os.RemoveAll(ts.cutFile)
+		if err != nil {
+			return
+		}
+	}
+
+	// Empty the copy and cutFiles
+	ts.cutFile = ""
+	ts.copyFile = ""
+
+	// Refresh files
+	cwdFiles, err := os.ReadDir(ts.cwd)
+	if err != nil {
+		return
+	}
+	ts.cwdFiles = ts.sortFunc(cwdFiles)
+	ts.refreshQueue()
+}
+
+// Recursive copying function
+func copyDir(src, dst string) error {
+	srcDir := filepath.Base(src)
+	return filepath.Walk(src, func(path string, info fs.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+
+		// copy to this path
+		outpath := filepath.Join(dst, srcDir, strings.TrimPrefix(path, src))
+
+		if info.IsDir() {
+			os.MkdirAll(outpath, info.Mode())
+			return nil // means recursive
+		}
+
+		return copyFile(path, outpath)
+	})
+}
+
+func copyFile(src, outpath string) error {
+	info, err := os.Stat(src)
+
+	// handle irregular files
+	if !info.Mode().IsRegular() {
+		switch info.Mode().Type() & os.ModeType {
+		case os.ModeSymlink:
+			link, err := os.Readlink(src)
+			if err != nil {
+				return err
+			}
+			return os.Symlink(link, outpath)
+		}
+		return nil
+	}
+
+	// copy contents of regular file efficiently
+	// open input
+	in, err := os.Open(src)
+	if err != nil {
+		return err
+	}
+	defer in.Close()
+
+	// create output
+	fh, err := os.Create(outpath)
+	if err != nil {
+		return err
+	}
+	defer fh.Close()
+
+	// make it the same
+	fh.Chmod(info.Mode())
+
+	// copy content
+	_, err = io.Copy(fh, in)
+	return err
 }
 
 func (ts *terminalSession) open() {
@@ -131,6 +342,12 @@ func (ts *terminalSession) delete() {
 		return
 	}
 	ts.cwdFiles = ts.sortFunc(cwdFiles)
+
+	// Go up one if we deleted the last file in a directory to prevent out of bounds error
+	if ts.selectionPos >= len(ts.cwdFiles) && len(ts.cwdFiles) > 0 {
+		ts.selectionPos -= 1
+	}
+
 	ts.refreshQueue()
 }
 

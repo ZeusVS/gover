@@ -90,6 +90,11 @@ func (ts *terminalSession) moveDownDir() {
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
+	// If the current directory has no files do nothing
+	if len(ts.cwdFiles) == 0 {
+		return
+	}
+
 	ts.mainOffset = 0
 	ts.previewOffsetV = 0
 	ts.previewOffsetH = 0

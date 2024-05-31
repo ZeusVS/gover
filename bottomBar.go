@@ -75,7 +75,7 @@ func (ts *terminalSession) queueBottomBar() {
 
 	// TODO: add terminal's default background color
 	// Will probably have to add termenv because it's not that easy
-	// Add color put the strings together
+	// Add color and put the strings together
 	position = StyleFgBlack + StyleBgBlue + position + StyleReset
 	lineTop = StyleBgWhite + StyleFgBlack + lineTop + StyleReset + position
 
@@ -87,33 +87,40 @@ func (ts *terminalSession) queueBottomBar() {
 
 	ts.drawQueue = append(ts.drawQueue, drawInstrTop)
 
-	// We add the file permissions on the second line
-	// In input mode this line will be overwritten in a separate function
-	if len(ts.cwdFiles) > 0 {
+	// In input mode the second line will be overwritten with queueInputLine()
+	// If there is something in the copy/cut buffer we put this on the second line
+	var lineBottom string
+	if ts.copyFile != "" {
+		lineBottom = "Copying file: \"" + ts.copyFile + "\""
+	} else if ts.cutFile != "" {
+		lineBottom = "Moving file: \"" + ts.cutFile + "\""
+
+		// Otherwise we add the file permissions on the second line
+	} else if len(ts.cwdFiles) > 0 {
 		fileInfo, err := ts.cwdFiles[ts.selectionPos].Info()
 		if err != nil {
 			// If we can't get the file info, just exit the function
 			return
 		}
-		lineBottom := fileInfo.Mode().String()
-
-		if ts.width > cmdWidth {
-			lineBottom = addPadding(lineBottom, " ", ts.width-cmdWidth)
-			cmdStr := addPadding(ts.cmdStr, " ", cmdWidth)
-			lineBottom += cmdStr
-		} else {
-			cmdStr := addPadding(ts.cmdStr, " ", ts.width)
-			lineBottom = cmdStr
-		}
-
-		drawInstrBottom := drawInstruction{
-			x:    0,
-			y:    ts.height - 1,
-			line: lineBottom,
-		}
-
-		ts.drawQueue = append(ts.drawQueue, drawInstrBottom)
+		lineBottom = fileInfo.Mode().String()
 	}
+
+	if ts.width > cmdWidth {
+		lineBottom = addPadding(lineBottom, " ", ts.width-cmdWidth)
+		cmdStr := addPadding(ts.cmdStr, " ", cmdWidth)
+		lineBottom += cmdStr
+	} else {
+		cmdStr := addPadding(ts.cmdStr, " ", ts.width)
+		lineBottom = cmdStr
+	}
+
+	drawInstrBottom := drawInstruction{
+		x:    0,
+		y:    ts.height - 1,
+		line: lineBottom,
+	}
+
+	ts.drawQueue = append(ts.drawQueue, drawInstrBottom)
 }
 
 func (ts *terminalSession) clearCommand() {

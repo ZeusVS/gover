@@ -24,19 +24,24 @@ func (ts *terminalSession) showManual() {
 	// Draw the manual
 	lines := `All available commands:
 Actions:
-'q'     Quit Gover
-'?'     Show manual page
-':'     Enter console command from the current working directory
+'q'      Quit Gover
+'?'      Show manual page
+':'      Enter console command from the current directory
+'escape' Clear all actions
+
+'i'     Insert/create new file in the current directory
+'I'     Insert/create new directory in the current directory
+
+'d'     Mark the currently selected file for cutting/moving
+'y'     Mark the currently selected file for copying
+'p'     Paste the marked cut/copy file to the current directory
+
 'D'     (Recursively) delete the current selection - will ask for confirmation
 'R'     Rename the current selection
+
 '/'     Search the main panel for specific text
 'n'     Jump to next occurrence of the searchstring
 'N'     Jump to previous occurrence of the searchstring
-
-"enter" Open the current selection in a new window
-            Directory: default terminal
-            Text file: default editor
-            Executable: run in a new window
 
 Motions:
 '~'     Go to your home directory

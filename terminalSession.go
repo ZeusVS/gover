@@ -39,6 +39,9 @@ type terminalSession struct {
 	width  int
 	height int
 
+	copyFile string
+	cutFile  string
+
 	drawQueue []drawInstruction
 
 	cwd          string
@@ -98,6 +101,8 @@ func StartTerminalSession() (terminalSession, error) {
 		fdIn:          fdIn,
 
 		// Initialise these variables to the default state
+		copyFile:  "",
+		cutFile:   "",
 		cmdStr:    "",
 		searchStr: "",
 		inputMode: false,

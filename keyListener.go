@@ -28,14 +28,25 @@ func (ts *terminalSession) startKeyListener() {
 		subCommand: map[rune]command{
 			// Actions
 			// Quit gover
-			'q': {
-				callback: ts.quit},
+			'q': {callback: ts.quit},
+			// Clear all actions
+			inputMap["escape"]: {callback: ts.clearActions},
 			// Show manual page
 			'?': {callback: ts.showManual},
 			// Custom terminal command
 			':': {callback: ts.terminalCommand},
 			// Open current selection
 			inputMap["enter"]: {callback: ts.open},
+			// Insert/create new file
+			'i': {callback: ts.insertFile},
+			// Insert/create new directory
+			'I': {callback: ts.insertDir},
+			// Copy the current selection
+			'y': {callback: ts.copy},
+			// Cut (move) the current selection
+			'd': {callback: ts.cut},
+			// Paste the current content of the copy/cut buffer
+			'p': {callback: ts.paste},
 			// Delete the current selection
 			'D': {callback: ts.delete},
 			// Rename current selection
@@ -163,6 +174,10 @@ func (ts *terminalSession) getCommand(ru rune) {
 	if !ok {
 		ts.curCmd = ts.startCmd
 		ts.cmdStr = ""
+		go func() {
+			time.Sleep(time.Millisecond * 50)
+			ts.clearCommand()
+		}()
 		return
 	}
 
