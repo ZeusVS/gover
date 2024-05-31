@@ -13,8 +13,7 @@ import (
 )
 
 const (
-	// For now we will lock the framerate at 60fps
-	framerate = 75
+	refreshrate = 75
 )
 
 type terminalSession struct {
@@ -60,11 +59,11 @@ func StartTerminalSession() (terminalSession, error) {
 	in := bufio.NewReader(os.Stdin)
 	out := os.Stdout
 	buffer := new(bytes.Buffer)
-	ticker := time.NewTicker(time.Millisecond * 1000 / framerate)
+	ticker := time.NewTicker(time.Millisecond * 1000 / refreshrate)
 	done := make(chan struct{})
 	inCh := make(chan rune)
-
 	fdIn := int(os.Stdin.Fd())
+
 	// Put the terminal in raw mode and remember the original state
 	originalState, err := term.MakeRaw(fdIn)
 	if err != nil {
@@ -94,6 +93,7 @@ func StartTerminalSession() (terminalSession, error) {
 		originalState: originalState,
 		fdIn:          fdIn,
 
+		// Initialise these variables to the default state
 		cmdStr:    "",
 		searchStr: "",
 		inputMode: false,
@@ -113,7 +113,8 @@ func StartTerminalSession() (terminalSession, error) {
 	// Enter the alt screen
 	fmt.Fprint(ts.out, CSI+AltScreenSeq)
 
-	// Set the initial state of the terminalSession
+	// Set the initial size of the terminalSession
+	// This function also adds the initial state to the drawQueue
 	ts.resize()
 
 	return ts, nil
@@ -129,6 +130,6 @@ func (ts *terminalSession) StopTerminalSession() {
 	// Restore original state
 	err := term.Restore(ts.fdIn, ts.originalState)
 	if err != nil {
-		fmt.Printf("Error restoring terminal's initial state: %s", err)
+		fmt.Fprintf(os.Stderr, "Error restoring terminal's initial state: %s", err)
 	}
 }

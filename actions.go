@@ -18,8 +18,11 @@ func (ts *terminalSession) open() {
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
-	selectionName := ts.cwdFiles[ts.selectionPos].Name()
-	filePath := filepath.Join(ts.cwd, selectionName)
+	selection, err := ts.cwdFiles[ts.selectionPos].Info()
+	if err != nil {
+		return
+	}
+	filePath := filepath.Join(ts.cwd, selection.Name())
 
 	// Get the default terminal
 	terminal := os.Getenv("TERM")
@@ -27,8 +30,19 @@ func (ts *terminalSession) open() {
 		return
 	}
 
+	if selection.Mode()&os.ModeSymlink != 0 {
+		link, err := filepath.EvalSymlinks(filePath)
+		if err == nil {
+			linkInfo, err := os.Stat(link)
+			if err == nil {
+				selection = linkInfo
+				filePath = link
+			}
+		}
+	}
+
 	// If selection is a directory open a new terminal window in that directory
-	if ts.cwdFiles[ts.selectionPos].IsDir() {
+	if selection.IsDir() {
 		os.Chdir(filePath)
 		cmd := exec.Command(terminal)
 		cmd.Run()
@@ -50,11 +64,9 @@ func (ts *terminalSession) open() {
 		return
 	}
 
-	// Executables and links remain
-
 	// Code for executables:
-	// cmd := exec.Command(terminal, "-e", path)
-	// cmd.Run()
+	cmd := exec.Command(terminal, "-e", filePath)
+	cmd.Run()
 }
 
 func (ts *terminalSession) rename() {
