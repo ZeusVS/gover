@@ -25,9 +25,9 @@ func (ts *terminalSession) showManual() {
 	lines := `All available commands:
 Actions:
 'q'     Quit Gover
+'?'     Show manual page
 ':'     Enter console command from the current working directory
-'D'     Delete the current selection (will ask for confirmation)
-        Recursively in case of a directory
+'D'     (Recursively) delete the current selection - will ask for confirmation
 'R'     Rename the current selection
 '/'     Search the main panel for specific text
 'n'     Jump to next occurrence of the searchstring

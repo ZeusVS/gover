@@ -20,45 +20,45 @@ go install github.com/ZeusVS/gover@latest
 
 ### Commands:
 ```
-- 'q': Quit the program
+Actions:
+'q'     Quit Gover
+'?'     Show manual page
+':'     Enter console command from the current working directory
+'D'     (Recursively) delete the current selection - will ask for confirmation
+'R'     Rename the current selection
+'/'     Search the main panel for specific text
+'n'     Jump to next occurrence of the searchstring
+'N'     Jump to previous occurrence of the searchstring
+"enter" Open the current selection in a new window
+            Directory: default terminal
+            Text file: default editor
+            Executable: run in a new window
 
-- ':': Enter console command from the current directory
+Motions:
+'~'     Go to your home directory
+'h'     Go to parent directory
+'l'     Go to selected directory
+'j'     Move selection marker down
+'J'     Move selection marker down by 10
+'k'     Move selection marker up
+'K'     Move selection marker up by 10
+'gg':   Move selection marker to the top
+'G':    Move selection marker to the bottom
 
-- 'enter': Open the current selection in a new window:
-               Directory: default terminal
-               Text file: default editor
+'<c-u>' Scroll the preview panel up
+'<c-d>' Scroll the preview panel down
+'<c-f>' Scroll the preview panel left
+'<c-k>' Scroll the preview panel right
 
-- 'D': Delete the current selection (will ask for confirmation)
-       Recursively in case of a directory
-- 'R': Rename the current selection
-- '/': Search the main panel for specific text
-- 'n': Jump to next occurrence of the searchstring
-- 'N': Jump to previous occurrence of the searchstring
-
-- '~':  Go to your home directory
-- 'h':  Go to parent directory
-- 'l':  Go to selected directory
-- 'j':  Move selection marker down
-- 'J':  Move selection marker down by 10
-- 'k':  Move selection marker up
-- 'K':  Move selection marker up by 10
-- 'gg': Move selection marker to the top
-- 'G':  Move selection marker to the bottom
-
-- '<c-u>':  Scroll the preview panel up
-- '<c-d>':  Scroll the preview panel down
-- '<c-f>':  Scroll the preview panel left
-- '<c-k>':  Scroll the preview panel right
-
-// Sorting commands
-- 'sd': Sort directories first
-- 'sD': Sort directories last
-- 'sa': Sort alphabetically
-- 'sA': Sort alphabetically reversed
-- 'st': Sort by modification time, newest first
-- 'sT': Sort by modification time, oldest first
-- 'ss': Sort by filesize, smallest first
-- 'sS': Sort by filesize, largest first
+Sorting commands:
+'sd'    Sort directories first
+'sD'    Sort directories last
+'sa'    Sort alphabetically
+'sA'    Sort alphabetically reversed
+'st'    Sort by modification time, newest first
+'sT'    Sort by modification time, oldest first
+'ss'    Sort by filesize, smallest first
+'sS'    Sort by filesize, largest first
 ```
 
 ### Important information:
