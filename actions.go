@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -107,12 +108,11 @@ func (ts *terminalSession) rename() {
 	if err != nil {
 		return
 	}
-	ts.cwdFiles = cwdFiles
+	ts.cwdFiles = ts.sortFunc(cwdFiles)
 	ts.refreshQueue()
 }
 
 func (ts *terminalSession) search() {
-	// TODO: Highlight all found search entries
 	// TODO: Add regex to the search methods
 	ts.inputMode = true
 	defer func() { ts.inputMode = false }()
@@ -246,4 +246,78 @@ func (ts *terminalSession) searchP() {
 
 	ts.refreshQueue()
 	ts.queueInputLine("Search: " + ts.searchStr)
+}
+
+func (ts *terminalSession) terminalCommand() {
+	ts.inputMode = true
+	defer func() { ts.inputMode = false }()
+
+	// Get the default terminal
+	terminal := os.Getenv("TERM")
+	if terminal == "" {
+		return
+	}
+	os.Chdir(ts.cwd)
+
+	cwd := ts.cwd
+	homeDir, err := os.UserHomeDir()
+	var cut bool
+	// Only try to cut prefix if a homeDir was found
+	if err == nil {
+		cwd, cut = strings.CutPrefix(cwd, homeDir)
+		// Only add tilde if a prefix was cut
+		if cut == true {
+			cwd = "~" + cwd
+		}
+	}
+
+	consoleString := StyleFgBlue + cwd + StyleFgGreen + " ❱ " + StyleReset
+	runeSlice := []rune{}
+	for {
+		ts.queueInputLine(consoleString + string(runeSlice))
+		ru := <-ts.inCh
+		if ru == inputMap["escape"] {
+			// Redraw the original bottomBar
+			ts.queueBottomBar()
+			// Reset the highlights
+			ts.queueMainFiles()
+			return
+		}
+		if ru == inputMap["enter"] {
+			break
+		}
+		if ru == inputMap["backspace"] {
+			if len(runeSlice) == 0 {
+				continue
+			}
+			runeSlice = runeSlice[:len(runeSlice)-1]
+		} else {
+			runeSlice = append(runeSlice, ru)
+		}
+	}
+
+	splitCmd := strings.Split(string(runeSlice), " ")
+	name := splitCmd[0]
+	args := []string{}
+	if len(splitCmd) > 1 {
+		args = splitCmd[1:]
+	}
+
+	cmd := exec.Command(name, args...)
+	err = cmd.Run()
+	if err != nil {
+		// If command fails only redraw bottom bar
+		ts.queueBottomBar()
+		fmt.Fprintf(os.Stderr, "Error executing command: %v", err)
+		return
+	}
+
+	// Refresh files
+	cwdFiles, err := os.ReadDir(ts.cwd)
+	if err != nil {
+		return
+	}
+	ts.cwdFiles = ts.sortFunc(cwdFiles)
+
+	ts.refreshQueue()
 }

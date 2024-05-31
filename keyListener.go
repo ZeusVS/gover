@@ -30,6 +30,8 @@ func (ts *terminalSession) startKeyListener() {
 			// Actions
 			// Quit gover
 			'q': {callback: ts.quit},
+			// Custom terminal command
+			':': {callback: ts.terminalCommand},
 			// Open current selection
 			inputMap["enter"]: {callback: ts.open},
 			// Rename current selection

@@ -22,6 +22,8 @@ go install github.com/ZeusVS/gover@latest
 ```
 - 'q': Quit the program
 
+- ':': Enter console command from the current directory
+
 - 'enter': Open the current selection in a new window:
                Directory: default terminal
                Text file: default editor
