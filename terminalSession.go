@@ -14,6 +14,7 @@ import (
 
 const (
 	refreshrate = 75
+	sortMode    = "dirsFirst"
 )
 
 type terminalSession struct {
@@ -33,16 +34,19 @@ type terminalSession struct {
 	cmdStr    string
 	searchStr string
 	inputMode bool
+	sortFunc  func([]os.DirEntry) []os.DirEntry
 
-	drawQueue    []drawInstruction
+	width  int
+	height int
+
+	drawQueue []drawInstruction
+
 	cwd          string
 	cwdFiles     []os.DirEntry
-	previewLen   int
 	selectionPos int
-	width        int
-	height       int
+	mainOffset   int
 
-	mainOffset     int
+	previewLen     int
 	previewOffsetV int
 	previewOffsetH int
 }
@@ -97,6 +101,7 @@ func StartTerminalSession() (terminalSession, error) {
 		cmdStr:    "",
 		searchStr: "",
 		inputMode: false,
+		sortFunc:  sortDirsFirst,
 
 		drawQueue:    []drawInstruction{},
 		cwd:          cwd,

@@ -18,7 +18,7 @@ go install github.com/ZeusVS/gover@latest
 - Now you should be able to execute gover in your terminal
     - If you have problems make sure your $GOPATH is set and $GOPATH/bin is added to your $PATH
 
-### Controls:
+### Commands:
 ```
 - 'q': Quit the program
 
@@ -45,6 +45,16 @@ go install github.com/ZeusVS/gover@latest
 - '<c-d>':  Scroll the preview panel down
 - '<c-f>':  Scroll the preview panel left
 - '<c-k>':  Scroll the preview panel right
+
+// Sorting commands
+- 'sd': Sort directories first
+- 'sD': Sort directories last
+- 'sa': Sort alphabetically
+- 'sA': Sort alphabetically reversed
+- 'st': Sort by modification time, newest first
+- 'sT': Sort by modification time, oldest first
+- 'ss': Sort by filesize, smallest first
+- 'sS': Sort by filesize, largest first
 ```
 
 ### Important information:

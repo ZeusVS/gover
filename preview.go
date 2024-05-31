@@ -43,6 +43,7 @@ func (ts *terminalSession) queuePreview() {
 		fileName := file.Name()
 		previewDir := filepath.Join(ts.cwd, fileName)
 		previewFiles, err := os.ReadDir(previewDir)
+		previewFiles = ts.sortFunc(previewFiles)
 		ts.previewLen = len(previewFiles)
 		if err != nil {
 			return

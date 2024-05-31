@@ -15,6 +15,7 @@ const (
 func (ts *terminalSession) queueMainFiles() {
 	// The width of the main file pane is defined
 	width := ts.width/2 - 1
+	ts.cwdFiles = ts.sortFunc(ts.cwdFiles)
 	ts.queueFiles(
 		ts.cwdFiles,
 		ts.cwd,

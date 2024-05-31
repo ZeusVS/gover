@@ -5,13 +5,6 @@ import "time"
 // TODO: Ideas:
 // ? show manual/all hotkeys
 
-// s + ...
-// d/D sort dirs first/last (default)
-// a/A sort alphabetically
-// n/N sort files by last open? date
-// s/S sort files by size
-// ???
-
 // <c-h> show/hide hidden files
 
 // Will be hard to implement:
@@ -78,6 +71,52 @@ func (ts *terminalSession) startKeyListener() {
 				subCommand: map[rune]command{
 					// Go to top on main panel
 					'g': {callback: func() { ts.moveUpSelection(len(ts.cwdFiles)) }},
+				},
+			},
+
+			// Sort commands
+			's': {
+				subCommand: map[rune]command{
+					// Sort directories first
+					'd': {callback: func() {
+						ts.sortFunc = sortDirsFirst
+						ts.refreshQueue()
+					}},
+					// Sort directories last
+					'D': {callback: func() {
+						ts.sortFunc = sortDirsLast
+						ts.refreshQueue()
+					}},
+					// Sort alphabetically
+					'a': {callback: func() {
+						ts.sortFunc = sortAlpha
+						ts.refreshQueue()
+					}},
+					// Sort alphabetically reversed
+					'A': {callback: func() {
+						ts.sortFunc = sortAlphaReverse
+						ts.refreshQueue()
+					}},
+					// Sort by modification time, newest first
+					't': {callback: func() {
+						ts.sortFunc = sortDateNewest
+						ts.refreshQueue()
+					}},
+					// Sort by modification time, oldest first
+					'T': {callback: func() {
+						ts.sortFunc = sortDateOldest
+						ts.refreshQueue()
+					}},
+					// Sort by filesize, smallest first
+					's': {callback: func() {
+						ts.sortFunc = sortSizeSmallest
+						ts.refreshQueue()
+					}},
+					// Sort by filesize, largest first
+					'S': {callback: func() {
+						ts.sortFunc = sortSizeLargest
+						ts.refreshQueue()
+					}},
 				},
 			},
 		},
