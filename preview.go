@@ -84,7 +84,6 @@ func (ts *terminalSession) queuePreview() {
 }
 
 func (ts *terminalSession) previewHatch(width int) {
-	// Otherwise we just display a hatch
 	ts.previewLen = ts.height - BottomRows
 	for i := range ts.previewLen {
 		line := StyleFgBlackBright + addPadding("", "╱", width) + StyleReset

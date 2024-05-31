@@ -80,7 +80,7 @@ func (ts *terminalSession) delete() {
 
 	confirmText := "Confirm deletion of \""
 	if ts.cwdFiles[ts.selectionPos].IsDir() {
-		confirmText = "Confirm recursive deletion of "
+		confirmText = "Confirm recursive deletion of \""
 	}
 
 	keys := "\" [y(es), n(o)]: "

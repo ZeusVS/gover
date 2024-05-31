@@ -28,6 +28,8 @@ go install github.com/ZeusVS/gover@latest
                Directory: default terminal
                Text file: default editor
 
+- 'D': Delete the current selection (will ask for confirmation)
+       Recursively in case of a directory
 - 'R': Rename the current selection
 - '/': Search the main panel for specific text
 - 'n': Jump to next occurrence of the searchstring

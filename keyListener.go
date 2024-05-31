@@ -12,7 +12,6 @@ import "time"
 // u     undo
 // <c-r> redo
 
-// D delete
 // ?/? create new file/directory
 // y copy
 // d cut
@@ -29,7 +28,10 @@ func (ts *terminalSession) startKeyListener() {
 		subCommand: map[rune]command{
 			// Actions
 			// Quit gover
-			'q': {callback: ts.quit},
+			'q': {
+				callback: ts.quit},
+			// Show manual page
+			'?': {callback: ts.showManual},
 			// Custom terminal command
 			':': {callback: ts.terminalCommand},
 			// Open current selection
