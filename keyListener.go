@@ -2,7 +2,8 @@ package main
 
 import "time"
 
-// TODO: Ideas:
+// TODO:
+// Command key ideas:
 // ? show manual/all hotkeys
 
 // <c-h> show/hide hidden files

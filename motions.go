@@ -62,7 +62,7 @@ func (ts *terminalSession) moveUpDir() {
 	if err != nil {
 		return
 	}
-	ts.cwdFiles = cwdFiles
+	ts.cwdFiles = ts.sortFunc(cwdFiles)
 
 	// Get the index of the directory we just moved out of to select it
 	for i, file := range ts.cwdFiles {
