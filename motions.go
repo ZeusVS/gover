@@ -9,6 +9,10 @@ func (ts *terminalSession) moveUpSelection(n int) {
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
 
+	if len(ts.cwdFiles) < 1 {
+		return
+	}
+
 	ts.selectionPos -= n
 	ts.previewOffsetV = 0
 	ts.previewOffsetH = 0
@@ -29,6 +33,10 @@ func (ts *terminalSession) moveUpSelection(n int) {
 func (ts *terminalSession) moveDownSelection(n int) {
 	ts.mu.Lock()
 	defer ts.mu.Unlock()
+
+	if len(ts.cwdFiles) < 1 {
+		return
+	}
 
 	ts.selectionPos += n
 	ts.previewOffsetV = 0
@@ -98,11 +106,6 @@ func (ts *terminalSession) moveDownDir() {
 	newFiles, err := os.ReadDir(newDir)
 	if err != nil {
 		// Better error handling?
-		return
-	}
-
-	// If dir is empty, don't move directory down
-	if len(newFiles) == 0 {
 		return
 	}
 

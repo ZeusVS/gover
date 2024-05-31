@@ -70,6 +70,70 @@ func (ts *terminalSession) open() {
 	cmd.Run()
 }
 
+func (ts *terminalSession) delete() {
+	// TODO: Move the selectionPos to the correct location after rename
+	ts.inputMode = true
+	defer func() { ts.inputMode = false }()
+	runeSlice := []rune{}
+
+	selectionName := ts.cwdFiles[ts.selectionPos].Name()
+
+	confirmText := "Confirm deletion of \""
+	if ts.cwdFiles[ts.selectionPos].IsDir() {
+		confirmText = "Confirm recursive deletion of "
+	}
+
+	keys := "\" [y(es), n(o)]: "
+
+	for {
+		for {
+			ts.queueInputLine(confirmText + selectionName + keys + string(runeSlice))
+			ru := <-ts.inCh
+			if ru == inputMap["escape"] {
+				// Redraw the original bottomBar
+				ts.queueBottomBar()
+				return
+			}
+			if ru == inputMap["enter"] {
+				break
+			}
+			if ru == inputMap["backspace"] {
+				if len(runeSlice) == 0 {
+					continue
+				}
+				runeSlice = runeSlice[:len(runeSlice)-1]
+			} else {
+				runeSlice = append(runeSlice, ru)
+			}
+		}
+		cmd := string(runeSlice)
+
+		// Stay in the loop untill we say y/yes/n/no
+		if strings.ToLower(cmd) == "y" || strings.ToLower(cmd) == "yes" {
+			break
+		} else if strings.ToLower(cmd) == "n" || strings.ToLower(cmd) == "no" {
+			ts.queueBottomBar()
+			return
+		}
+		runeSlice = nil
+	}
+
+	selectionPath := filepath.Join(ts.cwd, selectionName)
+
+	err := os.RemoveAll(selectionPath)
+	if err != nil {
+		return
+	}
+
+	// Refresh files
+	cwdFiles, err := os.ReadDir(ts.cwd)
+	if err != nil {
+		return
+	}
+	ts.cwdFiles = ts.sortFunc(cwdFiles)
+	ts.refreshQueue()
+}
+
 func (ts *terminalSession) rename() {
 	// TODO: Move the selectionPos to the correct location after rename
 	ts.inputMode = true

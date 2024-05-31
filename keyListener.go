@@ -34,6 +34,8 @@ func (ts *terminalSession) startKeyListener() {
 			':': {callback: ts.terminalCommand},
 			// Open current selection
 			inputMap["enter"]: {callback: ts.open},
+			// Delete the current selection
+			'D': {callback: ts.delete},
 			// Rename current selection
 			'R': {callback: ts.rename},
 			// Search the current files

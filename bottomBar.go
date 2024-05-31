@@ -29,7 +29,11 @@ func (ts *terminalSession) queueBottomBar() {
 	if cwd == "/" {
 		cwd = ""
 	}
-	lineTop := cwd + "/" + ts.cwdFiles[ts.selectionPos].Name()
+
+	lineTop := cwd + "/"
+	if len(ts.cwdFiles) >= 1 {
+		lineTop = lineTop + ts.cwdFiles[ts.selectionPos].Name()
+	}
 	homeDir, err := os.UserHomeDir()
 
 	var cut bool
@@ -85,29 +89,31 @@ func (ts *terminalSession) queueBottomBar() {
 
 	// We add the file permissions on the second line
 	// In input mode this line will be overwritten in a separate function
-	fileInfo, err := ts.cwdFiles[ts.selectionPos].Info()
-	if err != nil {
-		// If we can't get the file info, just exit the function
-		return
-	}
-	lineBottom := fileInfo.Mode().String()
+	if len(ts.cwdFiles) > 0 {
+		fileInfo, err := ts.cwdFiles[ts.selectionPos].Info()
+		if err != nil {
+			// If we can't get the file info, just exit the function
+			return
+		}
+		lineBottom := fileInfo.Mode().String()
 
-	if ts.width > cmdWidth {
-		lineBottom = addPadding(lineBottom, " ", ts.width-cmdWidth)
-		cmdStr := addPadding(ts.cmdStr, " ", cmdWidth)
-		lineBottom += cmdStr
-	} else {
-		cmdStr := addPadding(ts.cmdStr, " ", ts.width)
-		lineBottom = cmdStr
-	}
+		if ts.width > cmdWidth {
+			lineBottom = addPadding(lineBottom, " ", ts.width-cmdWidth)
+			cmdStr := addPadding(ts.cmdStr, " ", cmdWidth)
+			lineBottom += cmdStr
+		} else {
+			cmdStr := addPadding(ts.cmdStr, " ", ts.width)
+			lineBottom = cmdStr
+		}
 
-	drawInstrBottom := drawInstruction{
-		x:    0,
-		y:    ts.height - 1,
-		line: lineBottom,
-	}
+		drawInstrBottom := drawInstruction{
+			x:    0,
+			y:    ts.height - 1,
+			line: lineBottom,
+		}
 
-	ts.drawQueue = append(ts.drawQueue, drawInstrBottom)
+		ts.drawQueue = append(ts.drawQueue, drawInstrBottom)
+	}
 }
 
 func (ts *terminalSession) clearCommand() {

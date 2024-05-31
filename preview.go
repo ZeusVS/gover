@@ -22,6 +22,11 @@ func (ts *terminalSession) queuePreview() {
 	// The width of the preview pane is defined
 	width := int(math.Ceil(float64(ts.width)/2.0) - 1)
 
+	if len(ts.cwdFiles) < 1 {
+		// If the selection pos is out of range
+		ts.previewHatch(width)
+		return
+	}
 	file, err := ts.cwdFiles[ts.selectionPos].Info()
 	if err != nil {
 		return
@@ -75,6 +80,10 @@ func (ts *terminalSession) queuePreview() {
 		return
 	}
 
+	ts.previewHatch(width)
+}
+
+func (ts *terminalSession) previewHatch(width int) {
 	// Otherwise we just display a hatch
 	ts.previewLen = ts.height - BottomRows
 	for i := range ts.previewLen {
