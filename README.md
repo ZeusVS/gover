@@ -72,6 +72,6 @@ Sorting commands:
 'sS'    Sort by filesize, largest first
 ```
 
-### Important information:
+### Important information
 To open files and directories the environment variables $TERM and $EDITOR are used,\
 to make this functionality work as intended make sure these are set.

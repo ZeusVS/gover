@@ -143,7 +143,7 @@ func (ts *terminalSession) startKeyListener() {
 	// Set the current command to the start command
 	ts.curCmd = ts.startCmd
 
-	// Make a channel that recieves all runes read from Stdin
+	// Make a channel that receives all runes read from Stdin
 	go func() {
 		for {
 			ru, _, err := ts.in.ReadRune()

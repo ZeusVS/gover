@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"slices"
 	"strings"
 	"unicode/utf8"
 )
@@ -71,13 +72,7 @@ func (ts *terminalSession) insertFile() {
 	// Everyone can read, only owner can write
 	_ = file.Chmod(0644)
 
-	// Refresh files
-	cwdFiles, err := os.ReadDir(ts.cwd)
-	if err != nil {
-		return
-	}
-	ts.cwdFiles = ts.sortFunc(cwdFiles)
-	ts.refreshQueue()
+	ts.refreshFiles(name)
 }
 
 func (ts *terminalSession) insertDir() {
@@ -115,13 +110,7 @@ func (ts *terminalSession) insertDir() {
 		return
 	}
 
-	// Refresh files
-	cwdFiles, err := os.ReadDir(ts.cwd)
-	if err != nil {
-		return
-	}
-	ts.cwdFiles = ts.sortFunc(cwdFiles)
-	ts.refreshQueue()
+	ts.refreshFiles(name)
 }
 
 func (ts *terminalSession) paste() {
@@ -137,18 +126,23 @@ func (ts *terminalSession) paste() {
 	if err != nil {
 		return
 	}
-	if sourceInfo.IsDir() {
-		copyDir(source, destination)
-	} else {
-		outpath := filepath.Join(destination, filepath.Base(source))
-		copyFile(source, outpath)
-	}
 
-	// Only in the case of cutFile will we also remove the original
-	if ts.cutFile != "" {
-		err := os.RemoveAll(ts.cutFile)
-		if err != nil {
-			return
+	name := filepath.Base(source)
+	fileName := filepath.Join(destination, name)
+	// Only actually copy or paste if the source and destination differ
+	if source != fileName {
+		if sourceInfo.IsDir() {
+			copyDir(source, fileName)
+		} else {
+			copyFile(source, fileName)
+		}
+
+		// Only in the case of cutFile will we also remove the original
+		if ts.cutFile != "" {
+			err := os.RemoveAll(ts.cutFile)
+			if err != nil {
+				return
+			}
 		}
 	}
 
@@ -156,25 +150,18 @@ func (ts *terminalSession) paste() {
 	ts.cutFile = ""
 	ts.copyFile = ""
 
-	// Refresh files
-	cwdFiles, err := os.ReadDir(ts.cwd)
-	if err != nil {
-		return
-	}
-	ts.cwdFiles = ts.sortFunc(cwdFiles)
-	ts.refreshQueue()
+	ts.refreshFiles(name)
 }
 
 // Recursive copying function
 func copyDir(src, dst string) error {
-	srcDir := filepath.Base(src)
 	return filepath.Walk(src, func(path string, info fs.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
 
 		// copy to this path
-		outpath := filepath.Join(dst, srcDir, strings.TrimPrefix(path, src))
+		outpath := filepath.Join(dst, strings.TrimPrefix(path, src))
 
 		if info.IsDir() {
 			os.MkdirAll(outpath, info.Mode())
@@ -187,6 +174,9 @@ func copyDir(src, dst string) error {
 
 func copyFile(src, outpath string) error {
 	info, err := os.Stat(src)
+	if err != nil {
+		return err
+	}
 
 	// handle irregular files
 	if !info.Mode().IsRegular() {
@@ -282,7 +272,6 @@ func (ts *terminalSession) open() {
 }
 
 func (ts *terminalSession) delete() {
-	// TODO: Move the selectionPos to the correct location after rename
 	ts.inputMode = true
 	defer func() { ts.inputMode = false }()
 	runeSlice := []rune{}
@@ -319,7 +308,7 @@ func (ts *terminalSession) delete() {
 		}
 		cmd := string(runeSlice)
 
-		// Stay in the loop untill we say y/yes/n/no
+		// Stay in the loop until we say y/yes/n/no
 		if strings.ToLower(cmd) == "y" || strings.ToLower(cmd) == "yes" {
 			break
 		} else if strings.ToLower(cmd) == "n" || strings.ToLower(cmd) == "no" {
@@ -336,23 +325,16 @@ func (ts *terminalSession) delete() {
 		return
 	}
 
-	// Refresh files
-	cwdFiles, err := os.ReadDir(ts.cwd)
-	if err != nil {
-		return
-	}
-	ts.cwdFiles = ts.sortFunc(cwdFiles)
+	destFile := ""
 
-	// Go up one if we deleted the last file in a directory to prevent out of bounds error
-	if ts.selectionPos >= len(ts.cwdFiles) && len(ts.cwdFiles) > 0 {
-		ts.selectionPos -= 1
+	if ts.selectionPos < len(ts.cwdFiles)-1 {
+		destFile = ts.cwdFiles[ts.selectionPos+1].Name()
 	}
 
-	ts.refreshQueue()
+	ts.refreshFiles(destFile)
 }
 
 func (ts *terminalSession) rename() {
-	// TODO: Move the selectionPos to the correct location after rename
 	ts.inputMode = true
 	defer func() { ts.inputMode = false }()
 	runeSlice := []rune{}
@@ -384,13 +366,7 @@ func (ts *terminalSession) rename() {
 	newPath := filepath.Join(ts.cwd, name)
 	os.Rename(oldPath, newPath)
 
-	// Refresh files
-	cwdFiles, err := os.ReadDir(ts.cwd)
-	if err != nil {
-		return
-	}
-	ts.cwdFiles = ts.sortFunc(cwdFiles)
-	ts.refreshQueue()
+	ts.refreshFiles(ts.cwdFiles[ts.selectionPos].Name())
 }
 
 func (ts *terminalSession) search() {
@@ -593,12 +569,26 @@ func (ts *terminalSession) terminalCommand() {
 		return
 	}
 
-	// Refresh files
+	ts.refreshFiles(ts.cwdFiles[ts.selectionPos].Name())
+}
+
+func (ts *terminalSession) refreshFiles(name string) {
 	cwdFiles, err := os.ReadDir(ts.cwd)
 	if err != nil {
 		return
 	}
 	ts.cwdFiles = ts.sortFunc(cwdFiles)
+
+	if name != "" {
+		ts.selectionPos = slices.IndexFunc(ts.cwdFiles, func(dir fs.DirEntry) bool {
+			if dir.Name() == name {
+				return true
+			}
+			return false
+		})
+	} else {
+		ts.selectionPos = 0
+	}
 
 	ts.refreshQueue()
 }

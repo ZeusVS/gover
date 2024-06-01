@@ -5,7 +5,7 @@ import "strings"
 func (ts *terminalSession) showManual() {
 	// TODO: Add scrolling when the cmd amount gets much higher
 
-	// start inputmode so that we block all input untill we leave the manual page
+	// start inputmode so that we block all input until we leave the manual page
 	ts.inputMode = true
 	defer func() { ts.inputMode = false }()
 

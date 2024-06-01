@@ -13,7 +13,7 @@ func main() {
 		return
 	}
 
-	// Add a waitgroup so that we don't quit untill we are done with all goroutines
+	// Add a waitgroup so that we don't quit until we are done with all goroutines
 	var wg sync.WaitGroup
 	wg.Add(3)
 
