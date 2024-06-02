@@ -9,10 +9,10 @@
 </div>
 
 ## - TOC
-    * [Etymology](#-Etymology)
-    * [Installation](#-Installation)
-    * [Commands](#-Commands)
-    * [Important information](#-Important-information)
+* [Etymology](#-Etymology)
+* [Installation](#-Installation)
+* [Commands](#-Commands)
+* [Important information](#-Important-information)
 
 ## - Etymology
 Word blend of\
