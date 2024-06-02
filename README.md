@@ -1,24 +1,35 @@
+<div align="center">
+
 # Gover
-## Terminal file manager in go
-This project is in active development, currently pre-alpha.\
-Please note, this file manager is only for unix based systems.
+#### Terminal file manager in go
+[![Go](https://img.shields.io/badge/golang-blue?style=for-the-badge&logo=go&logoColor=white&logoSize=auto)](https://go.dev)
+![macOS](https://img.shields.io/badge/macOS-black?style=for-the-badge&logo=apple&logoColor=F0F0F0)
+![Linux](https://img.shields.io/badge/Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black)
 
-### Etymology
+</div>
+
+## - TOC
+    * [Etymology](#-Etymology)
+    * [Installation](#-Installation)
+    * [Commands](#-Commands)
+    * [Important information](#-Important-information)
+
+## - Etymology
 Word blend of\
-    - go: The programming language this file manager is written in\
-    - rover: The file manager this one is loosely based upon
+* go: The programming language this file manager is written in\
+* rover: The file manager this one is loosely based upon
 
-### How to start
-- Make sure you have go 1.22.3 installed
-- Install using the following:
+## - Installation
+* Go 1.22.3+ required
+* Install using the following command
 ```bash
 go install github.com/ZeusVS/gover@latest
 ```
-- This will automatically build the code and add it to $GOPATH/bin for you
-- Now you should be able to execute gover in your terminal
-    - If you have problems make sure your $GOPATH is set and $GOPATH/bin is added to your $PATH
+* This will automatically build the code and add it to $GOPATH/bin for you
+* Now you should be able to execute gover in your terminal
+    * If you have problems make sure your $GOPATH is set and $GOPATH/bin is added to your $PATH
 
-### Commands
+## - Commands
 ```
 Actions:
 'q'      Quit Gover
@@ -72,6 +83,6 @@ Sorting commands:
 'sS'    Sort by filesize, largest first
 ```
 
-### Important information
+## - Important information
 To open files and directories the environment variables $TERM and $EDITOR are used,\
 to make this functionality work as intended make sure these are set.

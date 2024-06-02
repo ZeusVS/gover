@@ -13,7 +13,8 @@ import (
 	"github.com/alecthomas/chroma/v2/styles"
 )
 
-// TODO: Add preview types?
+// TODO: Add more preview types
+// Csv?
 // Pdf?
 // Images?
 // Videos?
@@ -103,8 +104,8 @@ func (ts *terminalSession) queueFileContents(
 	offsetV int,
 	offsetH int,
 	col int,
-	width int) {
-
+	width int,
+) {
 	// First we apply the syntax highlighting
 	lexer := lexers.Match(name)
 	if lexer == nil {
@@ -116,14 +117,14 @@ func (ts *terminalSession) queueFileContents(
 	formatter := formatters.Get("terminal256")
 	iterator, err := lexer.Tokenise(nil, contents)
 	if err != nil {
-		// TODO
+		// TODO:
 	}
 
 	// Write the text with syntax highlighting to a buffer
 	buffer := new(bytes.Buffer)
 	err = formatter.Format(buffer, style, iterator)
 	if err != nil {
-		// TODO
+		// TODO:
 	}
 
 	lines := strings.Split(buffer.String(), "\n")
@@ -164,7 +165,6 @@ func (ts *terminalSession) queueFileContents(
 }
 
 func removeFirstChars(line string, n int) string {
-
 	runeLine := []rune(line)
 	escapeCode := false
 	returnLine := ""

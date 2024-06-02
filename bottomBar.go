@@ -6,10 +6,8 @@ import (
 	"strings"
 )
 
-var (
-	// Give the commands an arbitrary width
-	cmdWidth int = 6
-)
+// Give the commands an arbitrary width
+var cmdWidth int = 6
 
 func (ts *terminalSession) queueBottomBar() {
 	// Get the index of the selected item
@@ -41,7 +39,7 @@ func (ts *terminalSession) queueBottomBar() {
 	if err == nil {
 		lineTop, cut = strings.CutPrefix(lineTop, homeDir)
 		// Only add tilde if a prefix was cut
-		if cut == true {
+		if cut {
 			lineTop = "~" + lineTop
 		}
 	}
@@ -124,7 +122,6 @@ func (ts *terminalSession) queueBottomBar() {
 }
 
 func (ts *terminalSession) clearCommand() {
-
 	emptyCmd := addPadding("", " ", cmdWidth)
 	drawInstrBottom := drawInstruction{
 		x:    ts.width - cmdWidth,

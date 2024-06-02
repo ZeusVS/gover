@@ -70,7 +70,7 @@ func (ts *terminalSession) insertFile() {
 		return
 	}
 	// Everyone can read, only owner can write
-	_ = file.Chmod(0644)
+	_ = file.Chmod(0o644)
 
 	ts.refreshFiles(name)
 }
@@ -104,7 +104,7 @@ func (ts *terminalSession) insertDir() {
 
 	filename := filepath.Join(ts.cwd, name)
 	// Only owner can write, read and execute for everyone
-	err := os.Mkdir(filename, 0755)
+	err := os.Mkdir(filename, 0o755)
 	if err != nil {
 		ts.queueBottomBar()
 		return
@@ -440,7 +440,7 @@ func (ts *terminalSession) searchN() {
 		}
 	}
 
-	if found == false {
+	if !found {
 		// then search from beginning up to current selection
 		for i := 0; i <= ts.selectionPos; i++ {
 			// For now we ignore char casing
@@ -454,7 +454,7 @@ func (ts *terminalSession) searchN() {
 		}
 	}
 
-	if found == false {
+	if !found {
 		line := StyleFgRed + "Pattern not found: " + ts.searchStr + StyleReset
 		ts.queueInputLine(line)
 		return
@@ -482,7 +482,7 @@ func (ts *terminalSession) searchP() {
 		}
 	}
 
-	if found == false {
+	if !found {
 		for i := len(ts.cwdFiles) - 1; i >= ts.selectionPos; i-- {
 			// For now we ignore char casing
 			fileStr := strings.ToLower(ts.cwdFiles[i].Name())
@@ -495,7 +495,7 @@ func (ts *terminalSession) searchP() {
 		}
 	}
 
-	if found == false {
+	if !found {
 		line := StyleFgRed + "Pattern not found: " + ts.searchStr + StyleReset
 		ts.queueInputLine(line)
 		return
@@ -523,7 +523,7 @@ func (ts *terminalSession) terminalCommand() {
 	if err == nil {
 		cwd, cut = strings.CutPrefix(cwd, homeDir)
 		// Only add tilde if a prefix was cut
-		if cut == true {
+		if cut {
 			cwd = "~" + cwd
 		}
 	}
@@ -581,10 +581,7 @@ func (ts *terminalSession) refreshFiles(name string) {
 
 	if name != "" {
 		ts.selectionPos = slices.IndexFunc(ts.cwdFiles, func(dir fs.DirEntry) bool {
-			if dir.Name() == name {
-				return true
-			}
-			return false
+			return dir.Name() == name
 		})
 	} else {
 		ts.selectionPos = 0

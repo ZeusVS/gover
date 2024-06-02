@@ -32,7 +32,8 @@ func (ts *terminalSession) queueFiles(
 	offset int,
 	col int,
 	width int,
-	selection bool) {
+	selection bool,
+) {
 	for i, dirEntry := range dirEntries {
 		if i < offset || i > ts.height+offset-1-BottomRows {
 			continue
@@ -49,7 +50,6 @@ func (ts *terminalSession) queueFiles(
 		// a directory or a file
 		if file.IsDir() {
 			line = ts.getDirLine(width, i, file, dir, selection)
-
 		} else if file.Mode()&os.ModeSymlink != 0 {
 			link, err = filepath.EvalSymlinks(filepath.Join(dir, file.Name()))
 			if err != nil {
@@ -65,9 +65,8 @@ func (ts *terminalSession) queueFiles(
 			}
 			line = ts.getLinkLine(width, i, file, link, symbol, selection)
 
-		} else if file.Mode()&0111 != 0 {
+		} else if file.Mode()&0o111 != 0 {
 			line = ts.getExeLine(width, i, file, selection)
-
 		} else {
 			line = ts.getFileLine(width, i, file, selection)
 		}
@@ -175,11 +174,10 @@ func (ts *terminalSession) getLinkLine(width int, i int, file os.FileInfo, link 
 
 func addPadding(line string, padChar string, padWidth int) string {
 	// Chop off part of the string if it's too large
-	runeLine := []rune(line)
 	var trimmedLine string
 	chars := 0
 	escapeCode := false
-	for _, rune := range runeLine {
+	for _, rune := range line {
 		// Escape codes get started with escape and stop at m for the color codes
 		// Only add 1 to char for non escape code runes
 		// Stop adding these chars when past the 'padWidth'
@@ -240,7 +238,6 @@ func getFileSize(size int64) string {
 					if sizeFloat <= 1024 {
 						sizeStr = fmt.Sprintf("%.2f", sizeFloat)
 						unit = "T"
-					} else {
 						// I think we can stop here, no?
 					}
 				}
