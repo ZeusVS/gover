@@ -9,17 +9,17 @@
 </div>
 
 ## - TOC
-* [Etymology](#-Etymology)
-* [Installation](#-Installation)
-* [Commands](#-Commands)
-* [Important information](#-Important-information)
+* [Etymology](#Etymology)
+* [Installation](#Installation)
+* [Commands](#Commands)
+* [Important information](#Important-information)
 
-## - Etymology
+## Etymology
 Word blend of\
 * go: The programming language this file manager is written in\
 * rover: The file manager this one is loosely based upon
 
-## - Installation
+## Installation
 * Go 1.22.3+ required
 * Install using the following command
 ```bash
@@ -29,7 +29,7 @@ go install github.com/ZeusVS/gover@latest
 * Now you should be able to execute gover in your terminal
     * If you have problems make sure your $GOPATH is set and $GOPATH/bin is added to your $PATH
 
-## - Commands
+## Commands
 ```
 Actions:
 'q'      Quit Gover
@@ -83,6 +83,6 @@ Sorting commands:
 'sS'    Sort by filesize, largest first
 ```
 
-## - Important information
+## Important information
 To open files and directories the environment variables $TERM and $EDITOR are used,\
 to make this functionality work as intended make sure these are set.
