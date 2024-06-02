@@ -9,19 +9,13 @@
 </div>
 
 ## - TOC
-* [Etymology](#Etymology)
 * [Installation](#Installation)
 * [Commands](#Commands)
 * [Important information](#Important-information)
 
-## Etymology
-Word blend of\
-* go: The programming language this file manager is written in\
-* rover: The file manager this one is loosely based upon
-
 ## Installation
 * Go 1.22.3+ required
-* Install using the following command
+* Run the following command
 ```bash
 go install github.com/ZeusVS/gover@latest
 ```
