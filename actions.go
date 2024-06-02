@@ -8,6 +8,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"slices"
+	"strconv"
 	"strings"
 	"unicode/utf8"
 )
@@ -226,11 +227,34 @@ func (ts *terminalSession) open() {
 	}
 	filePath := filepath.Join(ts.cwd, selection.Name())
 
-	// Get the default terminal
-	terminal := os.Getenv("TERM")
-	if terminal == "" {
+	// HACK:
+	// Get the current terminal
+
+	// Get parent PID of current process (the shell)
+	ppid := strconv.Itoa(os.Getppid())
+	// Get parent PID of the shell (the terminal)
+	statusPath := filepath.Join("/proc", ppid, "status")
+	dataBytes, err := os.ReadFile(statusPath)
+	if err != nil {
 		return
 	}
+	data := string(dataBytes)
+	gppidStart := strings.Index(data, "PPid:	") + len("PPid:	")
+	gppidEnd := strings.Index(data[gppidStart:], "\n")
+	gppid := data[gppidStart : gppidStart+gppidEnd]
+
+	// Get grandparent PID's name (name of the terminal)
+	statusPath = filepath.Join("/proc", gppid, "status")
+	dataBytes, err = os.ReadFile(statusPath)
+	if err != nil {
+		return
+	}
+	data = string(dataBytes)
+	termStart := strings.Index(data, "Name:	") + len("Name:	")
+	termEnd := strings.Index(data[termStart:], "\n")
+	term := data[termStart : termStart+termEnd]
+
+	fmt.Fprintln(os.Stderr, gppid)
 
 	if selection.Mode()&os.ModeSymlink != 0 {
 		link, err := filepath.EvalSymlinks(filePath)
@@ -246,7 +270,7 @@ func (ts *terminalSession) open() {
 	// If selection is a directory open a new terminal window in that directory
 	if selection.IsDir() {
 		os.Chdir(filePath)
-		cmd := exec.Command(terminal)
+		cmd := exec.Command(term)
 		cmd.Run()
 		return
 	}
@@ -258,16 +282,16 @@ func (ts *terminalSession) open() {
 		// Get the default editor
 		editor := os.Getenv("EDITOR")
 		if editor == "" {
-			return
+			editor = "vim"
 		}
 
-		cmd := exec.Command(terminal, "-e", editor, filePath)
+		cmd := exec.Command(term, "-e", editor, filePath)
 		cmd.Run()
 		return
 	}
 
 	// Code for executables:
-	cmd := exec.Command(terminal, "-e", filePath)
+	cmd := exec.Command(term, "-e", filePath)
 	cmd.Run()
 }
 
