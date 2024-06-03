@@ -1,29 +1,57 @@
-<div align="center">
-
 # Gover
-#### Terminal file manager in go
-[![Go](https://img.shields.io/badge/golang-blue?style=for-the-badge&logo=go&logoColor=white&logoSize=auto)](https://go.dev)
-![macOS](https://img.shields.io/badge/macOS-black?style=for-the-badge&logo=apple&logoColor=F0F0F0)
+
+<!-- TODO: Add a logo here -->
+
+[![Go](https://img.shields.io/badge/go-blue?style=for-the-badge&logo=go&logoColor=white&logoSize=auto)](https://go.dev)
 ![Linux](https://img.shields.io/badge/Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black)
+![macOS](https://img.shields.io/badge/macOS-black?style=for-the-badge&logo=apple&logoColor=F0F0F0)
 
-</div>
+<!-- TODO: Add a gif here -->
 
-## - TOC
-* [Installation](#Installation)
-* [Commands](#Commands)
-* [Important information](#Important-information)
+<!-- TODO: Add a description here -->
 
-## Installation
-* Go 1.22.3+ required
-* Run the following command
+## Table of Contents
+
+* [Getting started](#Getting-started)
+    * [Prerequisites](#Prerequisites)
+    * [Installation](#Installation)
+* [Usage](#Usage)
+    * [All commands](#All-commands)
+* [Contributing](#Contributing)
+
+## Getting started
+
+### Prerequisites
+
+* Go 1.22.3+
+<!-- TODO: Add go intallation instructions here -->
+* Unix based operating system
+    * Linux
+    * macOS
+* A [nerdfont](https://github.com/ryanoasis/nerd-fonts) installed if you want to properly display file/dir/link/exec icons
+
+### Installation
+
 ```bash
 go install github.com/ZeusVS/gover@latest
 ```
-* This will automatically build the code and add it to $GOPATH/bin for you
-* Now you should be able to execute gover in your terminal
-    * If you have problems make sure your $GOPATH is set and $GOPATH/bin is added to your $PATH
 
-## Commands
+This will automatically build the code and add it to your $GOPATH/bin 
+
+### Running
+
+Run gover in the desired working directory
+
+```bash
+gover
+```
+
+    If you have problems running gover make sure your $GOPATH is set and $GOPATH/bin is added to your path
+
+## Usage
+
+### All commands
+
 ```
 Actions:
 'q'      Quit Gover
@@ -77,6 +105,8 @@ Sorting commands:
 'sS'    Sort by filesize, largest first
 ```
 
-## Important information
-To open files and directories the environment variables $TERM and $EDITOR are used,\
-to make this functionality work as intended make sure these are set.
+## Contributing
+
+I would love your help! Contribute by forking the repo and opening pull requests or creating issues.
+
+All pull requests should be submitted to the `main` branch.

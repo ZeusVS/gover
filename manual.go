@@ -1,6 +1,8 @@
 package main
 
-import "strings"
+import (
+	"strings"
+)
 
 func (ts *terminalSession) showManual() {
 	// TODO: Add scrolling when the cmd amount gets much higher
