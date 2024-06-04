@@ -26,15 +26,16 @@ Gover is a minimalistic terminal-based file manager with vim based key bindings.
 ## Motivation
 
 The currently available file managers are either:
-    * made in a slower language like python
-    * bloated with too many unneeded features and not simple/minimalistic anymore
-    * lacking some core features that are must-haves for a complete file manager experience.
+
+* made in a slower language like python
+* bloated with too many unneeded features and not simple/minimalistic anymore
+* lacking some core features that are must-haves for a complete file manager experience.
 
 ### Goal
 
-The primary goal of gover is to be a blazingly fast and uncompromising file manager.
-
-I aim to add as much functionality as possible while keeping the program simple. Each feature will be thoughtfully considered to maintain an intuitive and efficient experience.
+The primary goal of Gover is to be a blazingly fast and uncompromising file manager.\
+The aim is to add as much functionality as possible while keeping the program still simple to use.\
+Each feature will be thoughtfully considered to maintain an intuitive and efficient experience.
 
 ## Key features
 
@@ -51,19 +52,19 @@ I aim to add as much functionality as possible while keeping the program simple.
 * Custom file manager features
     * Custom file/directory sorting
     * Text file previews with syntax highlighting
-    * Run console/terminal commands from within gover
+    * Run console/terminal commands from within Gover
     * Built in manual page showing all available commands
 
 ## Getting started
 
 ### Prerequisites
 
-* Go 1.22.3+
-    * If you do not yet have a working Go environment of at least 1.22.3, please follow check out [this page](https://go.dev/doc/install)
+* Go 1.22.3+ installed
+    * If you do not yet have a working Go environment of at least V1.22.3, please check out [this page](https://go.dev/doc/install)
 * Unix based operating system
     * Linux
     * macOS
-* A nerdfont installed to properly display the used icons
+* A nerdfont installed to properly display Gover's icons
     * If you do not have a nerdfont installed, please check out [this page](https://github.com/ryanoasis/nerd-fonts)
 
 ### Installation
@@ -74,13 +75,13 @@ go install github.com/ZeusVS/gover@latest
 
 ### Running
 
-To start gover in the current terminal directory:
+To start Gover in the current terminal directory:
 
 ```bash
 gover
 ```
 
-If you have problems installing and running gover make sure:
+If you have problems installing and running Gover make sure:
 
 * your $GOPATH is set
 * $GOPATH/bin is added to your path
