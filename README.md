@@ -27,9 +27,9 @@ Gover is a minimalistic terminal-based file manager with vim based key bindings.
 
 The currently available file managers are either:
 
-* made in a slower language like python
-* bloated with too many unneeded features and not simple/minimalistic anymore
-* lacking some core features that are must-haves for a complete file manager experience.
+* Made in a slower language like python.
+* Bloated with too many unneeded features making the program unintuitive and complex.
+* Lacking some core features that are must-haves for a complete file manager experience.
 
 ### Goal
 
@@ -145,6 +145,5 @@ Sorting commands:
 
 ## Contributing
 
-I would love your help! Contribute by forking the repo and opening pull requests or creating issues.
-
+I would love your help! Contribute by forking the repo and opening pull requests or creating issues.\
 All pull requests should be submitted to the `main` branch.
