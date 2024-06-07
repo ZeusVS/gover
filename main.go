@@ -7,6 +7,7 @@ import (
 
 func main() {
 	// Start the terminal session
+
 	ts, err := StartTerminalSession()
 	if err != nil {
 		fmt.Printf("Error starting the session: %s\n", err)
